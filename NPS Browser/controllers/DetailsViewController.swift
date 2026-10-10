@@ -21,7 +21,8 @@ class DetailsViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         chkBookmark.image = NSImage.symbol("star")
-        chkBookmark.alternateImage = NSImage.symbol("star.fill")
+        let yellow = NSImage.SymbolConfiguration(paletteColors: [.systemYellow])
+        chkBookmark.alternateImage = NSImage.symbol("star.fill").withSymbolConfiguration(yellow)
     }
 
     override var representedObject: Any? {
