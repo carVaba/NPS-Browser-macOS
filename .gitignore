@@ -1,13 +1,6 @@
 
-# Created by https://www.gitignore.io/api/xcode,swift,carthage
-# Edit at https://www.gitignore.io/?templates=xcode,swift,carthage
-
-### Carthage ###
-# Carthage
-#
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-Carthage/Checkouts
-Carthage/Build
+# Created by https://www.gitignore.io/api/xcode,swift
+# Edit at https://www.gitignore.io/?templates=xcode,swift
 
 ### Swift ###
 # Xcode
@@ -104,7 +97,7 @@ iOSInjectionProject/
 ### Xcode Patch ###
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-# End of https://www.gitignore.io/api/xcode,swift,carthage
+# End of https://www.gitignore.io/api/xcode,swift
 
 # macOS
 .DS_Store
