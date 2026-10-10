@@ -9,7 +9,6 @@
 import Cocoa
 import SwiftyBeaver
 import RealmSwift
-import SwiftyUserDefaults
 
 let log = SwiftyBeaver.self
 

@@ -8,7 +8,6 @@
 
 import Cocoa
 import RealmSwift
-import SwiftyUserDefaults
 
 class DataViewController: NSViewController, ToolbarDelegate {
     

@@ -8,7 +8,6 @@
 
 import Cocoa
 import Foundation
-import SwiftyUserDefaults
 
 class PreferencesViewController: NSViewController {
     // Sources

@@ -10,7 +10,6 @@ import Foundation
 import Cocoa
 import Zip
 //import Files
-import SwiftyUserDefaults
 
 class ExtractionManager {
     private var item: DLItem

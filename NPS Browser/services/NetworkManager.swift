@@ -8,7 +8,6 @@
 
 import Promises
 import Alamofire
-import SwiftyUserDefaults
 
 class NetworkManager {
     
