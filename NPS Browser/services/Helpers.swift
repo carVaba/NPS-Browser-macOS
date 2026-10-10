@@ -137,3 +137,15 @@ extension NSImage {
         return NSImage(systemSymbolName: name, accessibilityDescription: nil) ?? NSImage()
     }
 }
+
+extension NSTableView {
+    // A list with one column fills its scroll view, so it does not scroll sideways.
+    func fitSingleColumnToScrollView() {
+        intercellSpacing = NSSize(width: 0, height: intercellSpacing.height)
+        columnAutoresizingStyle = .uniformColumnAutoresizingStyle
+        tableColumns.first?.resizingMask = .autoresizingMask
+        enclosingScrollView?.hasHorizontalScroller = false
+        enclosingScrollView?.horizontalScrollElasticity = .none
+        sizeLastColumnToFit()
+    }
+}

@@ -461,7 +461,7 @@
                                                                 </stackView>
                                                             </subviews>
                                                             <constraints>
-                                                                <constraint firstItem="6n4-g2-EvQ" firstAttribute="centerX" secondItem="QIy-Om-5kl" secondAttribute="centerX" constant="-29" id="1wI-3u-u8Q"/>
+                                                                <constraint firstItem="4CT-DB-EeP" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6n4-g2-EvQ" secondAttribute="trailing" constant="8" id="1wI-3u-u8Q"/>
                                                                 <constraint firstItem="6n4-g2-EvQ" firstAttribute="centerY" secondItem="QIy-Om-5kl" secondAttribute="centerY" id="MM9-Uu-V1S"/>
                                                                 <constraint firstAttribute="trailing" secondItem="4CT-DB-EeP" secondAttribute="trailing" constant="6" id="jl2-qD-EDl"/>
                                                                 <constraint firstItem="4CT-DB-EeP" firstAttribute="centerY" secondItem="6n4-g2-EvQ" secondAttribute="centerY" id="mZt-uK-ZEi"/>

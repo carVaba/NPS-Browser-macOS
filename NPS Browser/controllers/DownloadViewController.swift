@@ -18,6 +18,7 @@ class DownloadViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do view setup here.
+        dlTableView.fitSingleColumnToScrollView()
         updateView()
 
         listObserver = NotificationCenter.default.addObserver(forName: .downloadListChanged, object: nil, queue: .main) { [weak self] _ in

@@ -17,6 +17,7 @@ class BookmarksViewController: NSViewController {
     override func viewDidLoad() {
         updateView()
         super.viewDidLoad()
+        tableView.fitSingleColumnToScrollView()
     }
     
     @IBAction func doRemoveBookmark(_ sender: NSButton) {
