@@ -1,7 +1,7 @@
 # NPS Browser for macOS
 
-A Swift 4 implementation of NPS Browser.\
-**Tested and working on macOS 10.11-10.15**
+A Swift implementation of NPS Browser.\
+**Requires macOS 13 or later**
 
 ![](/Screenshots/main.png?raw=true)
 
@@ -29,12 +29,8 @@ defaults delete JK3Y.NPS-Browser
 ```
 
 ## Building
-Make sure you have Xcode 10.2 and [Carthage][] installed.
-Open a terminal and install the dependencies:
-```
-carthage bootstrap --platform macOS --no-use-binaries --cache-builds
-```
-Open the .xcodeproj file to open the project.
+Make sure you have Xcode 26 or later installed.
+Open the .xcodeproj file. Xcode fetches the Swift Package Manager dependencies on its own.
 
 Build by going to Product > Build.
 
@@ -48,7 +44,6 @@ Export an app bundle by going to Product > Archive > Export.
 * devnoname120 for [vitanpupdatelinks][]
 * L1cardo for Simplified Chinese translation
 
-[Carthage]: https://github.com/Carthage/Carthage
 [Changelog]: https://github.com/JK3Y/NPS-Browser-macOS/blob/master/CHANGELOG.md
 [pkg2zip]: https://github.com/Luro02/pkg2zip
 [vitanpupdatelinks]: https://github.com/devnoname120/vitanpupdatelinks
