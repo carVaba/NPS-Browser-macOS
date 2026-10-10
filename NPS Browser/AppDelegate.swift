@@ -7,13 +7,14 @@
 //
 
 import Cocoa
+import UserNotifications
 import SwiftyBeaver
 import RealmSwift
 
 let log = SwiftyBeaver.self
 
 @main
-class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     
     lazy var downloadManager: DownloadManager = DownloadManager()
 
@@ -62,20 +63,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     // MARK: - Notifications
-    
+
     func showNotification(title: String, subtitle: String) {
-        let notification = NSUserNotification()
-        
-        notification.title = title
-        notification.subtitle = subtitle
-        notification.soundName = NSUserNotificationDefaultSoundName
-        NSUserNotificationCenter.default.delegate = self
-        NSUserNotificationCenter.default.deliver(notification)
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+            guard granted else { return }
+
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.subtitle = subtitle
+            content.sound = .default
+            center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
+        }
     }
-    
-    func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
-        return true
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
     }
 
 }
-
