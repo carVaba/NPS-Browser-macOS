@@ -8,6 +8,8 @@
 
 import Cocoa
 
+// Realm objects belong to the main thread, so the class stays on the main actor.
+@MainActor
 class PSNStoreApi {
     var item: Item
     var consoleType: ConsoleType
