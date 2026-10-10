@@ -11,16 +11,32 @@ import Fuzi
 
 class Parser {
     func parseTSV(data: String, itemType: ItemType) -> [TSVData] {
-        var parsedData: [TSVData] = []
-        var rows = data.split(separator: "\r\n")
-        rows.remove(at: 0)
-        
-        for row in rows {
-            let values = row.components(separatedBy: "\t")
+        var lines = data.split(whereSeparator: { $0.isNewline }).makeIterator()
 
-            let tsvData = TSVData(type: itemType, values: values)
-            
-            parsedData.append(tsvData)
+        guard let headerLine = lines.next() else {
+            return []
+        }
+        let header = headerLine.components(separatedBy: "\t").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard header.first == "Title ID" else {
+            log.error("Unexpected TSV header: \(headerLine)")
+            return []
+        }
+
+        var parsedData: [TSVData] = []
+        while let line = lines.next() {
+            let values = line.components(separatedBy: "\t")
+
+            var row: [String: String] = [:]
+            for (column, value) in zip(header, values) where !value.isEmpty {
+                row[column] = value
+            }
+
+            // Item creation needs these values, so rows without them cannot be stored.
+            guard row["Title ID"] != nil, row["Region"] != nil, row["Name"] != nil, row["Content ID"] != nil else {
+                continue
+            }
+
+            parsedData.append(TSVData(type: itemType, row: row))
         }
         return parsedData
     }

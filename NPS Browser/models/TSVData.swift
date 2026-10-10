@@ -25,71 +25,38 @@ struct TSVData {
     var consoleType             : ConsoleType
     var fileType                : FileType
     
-    init(type: ItemType, values: [String]) {
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
+
+    // Columns are read by header name, because the column order differs between the TSV files.
+    init(type: ItemType, row: [String: String]) {
         consoleType = type.console
         fileType = type.fileType
-        titleId = values[0]
-        region = values[1]
 
-        switch type.console {
-        case .PSV:
-            switch type.fileType {
-            case .Game:
-                name                  = values[2]
-                pkgDirectLink         = values[3]
-                zrif                  = values[4]
-                contentId             = values[5]
-                lastModificationDate  = parseDate(dateString: values[6])
-                originalName          = values[7]
-                fileSize              = Int64(values[8])
-                sha256                = values[9]
-                requiredFw            = Float(values[10])
-            case .DLC, .Theme:
-                name                  = values[2]
-                pkgDirectLink         = values[3]
-                zrif                  = values[4]
-                contentId             = values[5]
-                lastModificationDate  = parseDate(dateString: values[6])
-                fileSize              = Int64(values[7])
-                sha256                = values[8]
-            default: break
+        titleId              = row["Title ID"]
+        region               = row["Region"]
+        name                 = row["Name"]
+        pkgDirectLink        = row["PKG direct link"]
+        zrif                 = row["zRIF"]
+        contentId            = row["Content ID"]
+        lastModificationDate = row["Last Modification Date"].flatMap { TSVData.dateFormatter.date(from: $0) }
+        originalName         = row["Original Name"]
+        fileSize             = row["File Size"].flatMap { Int64($0) }
+        sha256               = row["SHA256"]
+        requiredFw           = row["Required FW"].flatMap { Float($0) }
+
+        if type.console == .PS3 {
+            rap = row["RAP"]
+            if let contentId = contentId, let rap = rap {
+                downloadRapFile = "https://nopaystation.com/tools/rap2file/\(contentId)/\(rap)"
             }
-        case .PS3:
-            let baseURL = "https://nopaystation.com/tools/rap2file"
-            name                      = values[2]
-            pkgDirectLink             = values[3]
-            rap                       = values[4]
-            contentId                 = values[5]
-            lastModificationDate      = parseDate(dateString: values[6])
-            downloadRapFile           = "\(baseURL)/\(values[5])/\(values[4])"
-            fileSize                  = Int64(values[8])
-            sha256                    = values[9]
-        case .PSP:
-            name                      = values[3]
-            pkgDirectLink             = values[4]
-            contentId                 = values[5]
-            lastModificationDate      = parseDate(dateString: values[6])
-            rap                       = values[7]
-            downloadRapFile           = values[8]
-            fileSize                  = Int64(values[9])
-            sha256                    = values[10]
-        case .PSX:
-            name                      = values[2]
-            pkgDirectLink             = values[3]
-            contentId                 = values[4]
-            lastModificationDate      = parseDate(dateString: values[5])
-            originalName              = values[6]
-            fileSize                  = Int64(values[7])
-            sha256                    = values[8]
+        } else {
+            rap = row["RAP"]
+            downloadRapFile = row["Download .RAP file"]
         }
-    }
- 
-    func parseDate(dateString: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else {
-            return nil
-        }
-        return date
     }
 }
