@@ -196,7 +196,7 @@ class DownloadManager {
 
                 addToDownloadQueue(data: item.doNext!)
             } else {
-                ExtractionManager(item: item, downloadManager: self).start()
+                await ExtractionManager(item: item, downloadManager: self).start()
             }
         }
     }

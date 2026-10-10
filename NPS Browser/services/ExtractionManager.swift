@@ -28,16 +28,16 @@ class ExtractionManager {
         self.downloadManager = downloadManager
     }
     
-    func start() {
+    func start() async {
         if (!shouldDoExtract()) {
             completeDownload(status: "Download Complete")
             return
         }
         
         if (item.fileType == "CPatch" || item.fileType == "CPack") {
-            unzipPPK()
+            await unzipPPK()
         } else {
-            usePkg2Zip()
+            await usePkg2Zip()
         }
     }
     
@@ -48,14 +48,14 @@ class ExtractionManager {
         return fp.appendingPathComponent("rePatch")
     }
     
-    func unzipPPK() {
+    func unzipPPK() async {
         var filepath = Defaults[.dl_library_folder]
         let rpf = makeRepatchFolder(filepath: filepath!)
         filepath = rpf.appendingPathComponent("\(item.titleId!)")
         
         if (item.fileType == "CPack") {
             do {
-                try Zip.unzipFile(item.destinationURL!, destination: filepath!, overwrite: true, password: nil)
+                try await Self.unzip(item.destinationURL!, to: filepath!)
                 completeDownload(status: "Extraction Complete")
             }
             catch {
@@ -66,12 +66,12 @@ class ExtractionManager {
         if (item.fileType == "CPatch") {
             do {
                 if (item.cpackPath != nil) {
-                    try Zip.unzipFile(item.cpackPath!, destination: filepath!, overwrite: true, password: nil)
+                    try await Self.unzip(item.cpackPath!, to: filepath!)
                     item.parentItem?.status = "Extraction Complete"
                     item.parentItem?.makeViewable()
                     Helpers().makeNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
                 }
-                try Zip.unzipFile(item.destinationURL!, destination: filepath!, overwrite: true, password: nil)
+                try await Self.unzip(item.destinationURL!, to: filepath!)
                 completeDownload(status: "Extraction Complete")
             }
             catch {
@@ -80,7 +80,8 @@ class ExtractionManager {
         }
     }
     
-    func usePkg2Zip() {
+    // The extraction of a large game takes a long time, so the process runs without blocking the main actor.
+    func usePkg2Zip() async {
         if (item.zrif == "MISSING") {
             completeDownload(status: "Missing zRIF, license not created")
             return
@@ -88,43 +89,35 @@ class ExtractionManager {
         
         setStatus("Extracting...")
         
-        let pkg2zipPath = Bundle.main.path(forResource: "pkg2zip", ofType: nil)
-        let task = Process()
-        let pipe = Pipe()
-        
-        task.currentDirectoryPath = (Defaults[.dl_library_folder]?.appendingPathComponent(item.consoleType!).path)!
-        
-        task.launchPath = pkg2zipPath
-        
-        task.arguments = getArguments()
-        task.standardOutput = pipe
-        
-        task.terminationHandler = { task in
-            DispatchQueue.main.async {
-                
-                let taskStatus = task.terminationStatus
-                
-                if (taskStatus == 0) {
-                    debugPrint("Success!")
-                    
-                    self.setStatus("Extraction Complete")
-                    self.item.makeViewable()
-                    Helpers().makeNotification(title: self.item.name!, subtitle: self.item.status!)
-                } else {
-                    debugPrint("Task Failed")
-                }
-            }
+        guard let pkg2zip = Bundle.main.url(forResource: "pkg2zip", withExtension: nil),
+              let consoleFolder = Defaults[.dl_library_folder]?.appendingPathComponent(item.consoleType ?? "") else {
+            setStatus("Extraction failed")
+            item.makeRemovable()
+            return
         }
-        
+
         do {
-            try task.run()
-        } catch let error as NSError {
-            debugPrint(error)
+            let status = try await ProcessRunner.run(executable: pkg2zip, arguments: getArguments(), currentDirectory: consoleFolder)
+            if (status == 0) {
+                setStatus("Extraction Complete")
+                item.makeViewable()
+                Helpers().makeNotification(title: item.name ?? "", subtitle: item.status ?? "")
+                cleanup()
+            } else {
+                log.error("pkg2zip stopped with status \(status)")
+                setStatus("Extraction failed")
+                item.makeRemovable()
+            }
+        } catch {
+            log.error(error)
+            setStatus("Extraction failed")
+            item.makeRemovable()
         }
-        
-        task.waitUntilExit()
-        
-        cleanup()
+    }
+
+    @concurrent
+    private static func unzip(_ file: URL, to destination: URL) async throws {
+        try Zip.unzipFile(file, destination: destination, overwrite: true, password: nil)
     }
     
     private func completeDownload(status: String) {
@@ -207,5 +200,29 @@ class ExtractionManager {
     
     private func setStatus(_ status: String) {
         item.status = status
+    }
+}
+
+enum ProcessRunner {
+    // Returns the exit status when the process ends.
+    static func run(executable: URL, arguments: [String], currentDirectory: URL) async throws -> Int32 {
+        try await withCheckedThrowingContinuation { continuation in
+            let process = Process()
+            process.executableURL = executable
+            process.arguments = arguments
+            process.currentDirectoryURL = currentDirectory
+            // The output is not read, so a full pipe would block the process.
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            process.terminationHandler = { finished in
+                continuation.resume(returning: finished.terminationStatus)
+            }
+
+            do {
+                try process.run()
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 }
