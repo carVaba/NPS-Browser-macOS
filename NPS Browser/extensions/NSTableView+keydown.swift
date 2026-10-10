@@ -13,16 +13,16 @@ extension NSTableView {
         switch event.keyCode {
         case 125:
             // Arrow Down
-            if (Helpers().getDataController().tsvResultsController.canSelectNext) {
-                Helpers().getDataController().tsvResultsController.setSelectionIndex(selectedRow + 1)
-                Helpers().getDataController().tableSelectionChanged(self)
+            if (Helpers().dataController.tsvResultsController.canSelectNext) {
+                Helpers().dataController.tsvResultsController.setSelectionIndex(selectedRow + 1)
+                Helpers().dataController.tableSelectionChanged(self)
             }
             break
         case 126:
             // Arrow Up
-            if (Helpers().getDataController().tsvResultsController.canSelectPrevious) {
-                Helpers().getDataController().tsvResultsController.setSelectionIndex(selectedRow - 1)
-                Helpers().getDataController().tableSelectionChanged(self)
+            if (Helpers().dataController.tsvResultsController.canSelectPrevious) {
+                Helpers().dataController.tsvResultsController.setSelectionIndex(selectedRow - 1)
+                Helpers().dataController.tableSelectionChanged(self)
             }
             break
         default:

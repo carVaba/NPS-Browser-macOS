@@ -41,7 +41,7 @@ class DownloadManager {
         if (try? Folder(path: filepath.path).createSubfolderIfNeeded(withName: console!)) != nil {
             return
         } else {
-            Helpers().getSharedAppDelegate().setupDownloadsDirectory()
+            Helpers().sharedAppDelegate.setupDownloadsDirectory()
             makeConsoleFolder(dlItem: dlItem)
         }
     }
@@ -204,7 +204,7 @@ class DownloadManager {
                 return
             }
 
-            if (item.isMore()) {
+            if (item.isMore) {
                 item.doNext?.cpackPath = item.destinationURL
                 item.status = "Waiting..."
 

@@ -7,11 +7,11 @@
 //
 
 protocol WindowDelegate {
-    func getRegion() -> String
-    func getSearchString() -> String
+    var region: String { get }
+    var searchString: String { get }
     
-    func getItemType() -> ItemType
+    var itemType: ItemType { get }
     
-    func getDataController() -> DataViewController
-    func getLoadingViewController() -> LoadingViewController
+    var dataController: DataViewController { get }
+    var loadingViewController: LoadingViewController { get }
 }

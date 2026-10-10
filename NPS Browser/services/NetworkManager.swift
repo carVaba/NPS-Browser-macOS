@@ -11,9 +11,9 @@ import Foundation
 @MainActor
 class NetworkManager {
     
-    let windowDelegate: WindowDelegate = Helpers().getWindowDelegate()
+    let windowDelegate: WindowDelegate = Helpers().windowDelegate
     
-    let itemType = Helpers().getWindowDelegate().getItemType()
+    let itemType = Helpers().windowDelegate.itemType
 
     func makeRequest() async {
         guard let url = Helpers().getUrlSettingsByType(itemType: itemType) else {
@@ -31,38 +31,38 @@ class NetworkManager {
         }
 
         let storage = try! RealmStorageContext()
-        let ft:FileType = self.windowDelegate.getItemType().fileType
-        let ct:ConsoleType = self.windowDelegate.getItemType().console
+        let ft:FileType = self.windowDelegate.itemType.fileType
+        let ct:ConsoleType = self.windowDelegate.itemType.console
         
         Helpers().showLoadingViewController()
-        Helpers().getLoadingViewController().setLabel(text: "Requesting data... (step 1/5)")
-        Helpers().getLoadingViewController().setProgress(amount: 20)
+        Helpers().loadingViewController.setLabel(text: "Requesting data... (step 1/5)")
+        Helpers().loadingViewController.setProgress(amount: 20)
 
         do {
             let text = try await HTTPClient.string(from: url) { fraction in
-                self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
-                self.windowDelegate.getLoadingViewController().setProgress(amount: fraction / 20)
+                self.windowDelegate.loadingViewController.setLabel(text: "Receiving data... (step 2/5)")
+                self.windowDelegate.loadingViewController.setProgress(amount: fraction / 20)
             }
 
-            self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
-            self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+            self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
+            self.windowDelegate.loadingViewController.setProgress(amount: 20)
             let parsedTSV = Parser().parseTSV(data: text, itemType: self.itemType)
 
-            self.windowDelegate.getLoadingViewController().setLabel(text: "Removing old values... (step 4/5)")
-            self.windowDelegate.getLoadingViewController().setProgress(amount: 50)
+            self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
+            self.windowDelegate.loadingViewController.setProgress(amount: 50)
             try storage.deleteAll(Item.self, predicate: NSPredicate(format: "fileType == %@ AND consoleType == %@", ft.rawValue, ct.rawValue))
 
-            self.windowDelegate.getLoadingViewController().setLabel(text: "Storing new values... (step 5/5)")
-            self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+            self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
+            self.windowDelegate.loadingViewController.setProgress(amount: 20)
             DBManager().storeBulk(objArray: parsedTSV.map { Item(tsvData: $0) })
         } catch {
             log.error(error)
-            Helpers().getLoadingViewController().closeWindow()
+            Helpers().loadingViewController.closeWindow()
             Helpers().makeAlert(messageText: "Could not load the list.", informativeText: error.localizedDescription, alertStyle: .warning)
             return
         }
 
-        Helpers().getLoadingViewController().closeWindow()
+        Helpers().loadingViewController.closeWindow()
 
         if (self.itemType.console == ConsoleType.PSV && self.itemType.fileType == FileType.Game) {
             Task {
@@ -70,7 +70,7 @@ class NetworkManager {
             }
         }
 
-        Helpers().getDataController().filterType(itemType: ItemType(console: ct, fileType: ft), region: self.windowDelegate.getRegion())
+        Helpers().dataController.filterType(itemType: ItemType(console: ct, fileType: ft), region: self.windowDelegate.region)
     }
 
     private func loadCompatPacks() async {
@@ -112,30 +112,30 @@ class NetworkManager {
         
         let typeName: String = isPatch ? "CompatPatch" : "CompatPack"
 
-        if (self.windowDelegate.getLoadingViewController().presentingViewController != nil) {
+        if (self.windowDelegate.loadingViewController.presentingViewController != nil) {
             Helpers().showLoadingViewController()
         }
-        Helpers().getLoadingViewController().setLabel(text: "Requesting Comp Packs... (step 1/5)")
-        Helpers().getLoadingViewController().setProgress(amount: 20)
+        Helpers().loadingViewController.setLabel(text: "Requesting Comp Packs... (step 1/5)")
+        Helpers().loadingViewController.setProgress(amount: 20)
 
         let text = try await HTTPClient.string(from: url) { fraction in
-            self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
-            self.windowDelegate.getLoadingViewController().setProgress(amount: fraction / 20)
+            self.windowDelegate.loadingViewController.setLabel(text: "Receiving data... (step 2/5)")
+            self.windowDelegate.loadingViewController.setProgress(amount: fraction / 20)
         }
 
-        self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
-        self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+        self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
+        self.windowDelegate.loadingViewController.setProgress(amount: 20)
         let parsed = Parser().parseCompatPackEntries(data: text, isPatch: isPatch, typeName: typeName)
 
-        self.windowDelegate.getLoadingViewController().setLabel(text: "Removing old values... (step 4/5)")
-        self.windowDelegate.getLoadingViewController().setProgress(amount: 50)
+        self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
+        self.windowDelegate.loadingViewController.setProgress(amount: 50)
         try storage.deleteAll(CompatPack.self, predicate: NSPredicate(format: "type == %@", typeName))
 
-        self.windowDelegate.getLoadingViewController().setLabel(text: "Storing new values... (step 5/5)")
-        self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+        self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
+        self.windowDelegate.loadingViewController.setProgress(amount: 20)
         DBManager().storeBulk(objArray: parsed)
 
-        Helpers().getLoadingViewController().closeWindow()
+        Helpers().loadingViewController.closeWindow()
     }
 
     func getUpdateXMLURLFromHMAC(titleId: String) -> String {

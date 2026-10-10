@@ -80,7 +80,7 @@ class DetailsViewController: NSViewController {
                         item.parentItem = baseDLItem
                     }
                     
-                    Helpers().getSharedAppDelegate().downloadManager.addToDownloadQueue(data: baseDLItem!)
+                    Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: baseDLItem!)
                 default: break
                 }
             default: break
@@ -176,7 +176,7 @@ class DetailsViewController: NSViewController {
     func sendDLData(url: URL, fileType: FileType) {
         let obj = getROManagedObject()
         let dlItem = Helpers().makeDLItem(data: obj, downloadUrl: url, fileType: fileType)
-        Helpers().getSharedAppDelegate().downloadManager.addToDownloadQueue(data: dlItem)
+        Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: dlItem)
     }
     
     func getROManagedObject() -> Item {

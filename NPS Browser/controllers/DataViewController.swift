@@ -13,7 +13,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
     
     @IBOutlet var tsvResultsController: NSArrayController!
     @IBOutlet weak var tableView: NSTableView!
-    lazy var windowDelegate: WindowDelegate = Helpers().getWindowDelegate()
+    lazy var windowDelegate: WindowDelegate = Helpers().windowDelegate
 
     var notificationToken: NotificationToken?
     
@@ -24,10 +24,10 @@ class DataViewController: NSViewController, ToolbarDelegate {
     var items: Results<Item>? = try! Realm().objects(Item.self)
     
     override func viewDidAppear() {
-        let it = windowDelegate.getItemType()
+        let it = windowDelegate.itemType
         let ct = it.console.rawValue
         let ft = it.fileType.rawValue
-        let reg = windowDelegate.getRegion()
+        let reg = windowDelegate.region
 
         if (items?.isEmpty)! {
             Task { await NetworkManager().makeRequest() }
@@ -38,7 +38,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
 
     override var representedObject: Any? {
         didSet {
-            self.getDetailsViewController().representedObject = representedObject
+            self.detailsViewController.representedObject = representedObject
         }
     }
 
@@ -48,9 +48,9 @@ class DataViewController: NSViewController, ToolbarDelegate {
         }
     }
     
-    func makePredicateString() -> String {
+    var predicateString: String {
         var str = "consoleType == %@ AND fileType == %@ AND region == %@ "
-        let it = windowDelegate.getItemType()
+        let it = windowDelegate.itemType
         
         if Defaults[.dsp_hide_invalid_url_items] {
             str.append(" AND pkgDirectLink != 'MISSING'")
@@ -65,7 +65,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
     }
     
     func filterType(itemType: ItemType, region: String) {
-        let p = NSPredicate(format: makePredicateString(), itemType.console.rawValue, itemType.fileType.rawValue, region)
+        let p = NSPredicate(format: predicateString, itemType.console.rawValue, itemType.fileType.rawValue, region)
         let objects = items!.filter(p)
         
         if objects.isEmpty {
@@ -73,7 +73,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
         }
 
         // The search text stays active when the console or the region changes.
-        let searchString = windowDelegate.getSearchString()
+        let searchString = windowDelegate.searchString
         if searchString.isEmpty {
             setArrayControllerContent(content: objects)
         } else {
@@ -83,7 +83,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
     
     func filterString(itemType: ItemType, region: String, searchString: String) {
 //        let p = NSPredicate(format: "consoleType == %@ AND fileType == %@ AND region == %@ AND name contains[c] %@ AND pkgDirectLink != 'MISSING'", itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
-        var p = makePredicateString()
+        var p = predicateString
         p.append(" AND name contains[c] %@")
         let q = NSPredicate(format: p, itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
 
@@ -97,7 +97,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
         tableSelectionChanged(tableView)
     }
     
-    func getDetailsViewController() -> DetailsViewController {
+    var detailsViewController: DetailsViewController {
         let sc: NSSplitViewController = parent?.children[1] as! NSSplitViewController
         let vc: DetailsViewController = sc.children[0] as! DetailsViewController
         return vc

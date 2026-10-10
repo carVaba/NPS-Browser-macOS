@@ -35,12 +35,12 @@ class DownloadViewController: NSViewController {
     }
     
     @IBAction func clearCompleted(_ sender: Any) {
-        Helpers().getSharedAppDelegate().downloadManager.removeCompleted()
+        Helpers().sharedAppDelegate.downloadManager.removeCompleted()
         updateView()
     }
     
     func updateView() {
-        let content = Helpers().getSharedAppDelegate().downloadManager.getObjectQueue()
+        let content = Helpers().sharedAppDelegate.downloadManager.getObjectQueue()
         dlArrayController.content = content
     }
 }

@@ -33,7 +33,7 @@ class AppUpdateChecker {
     @MainActor
     func downloadUpdate(url: URL) async {
         Helpers().showLoadingViewController()
-        Helpers().getLoadingViewController().setLabel(text: "Fetching update...")
+        Helpers().loadingViewController.setLabel(text: "Fetching update...")
 
         let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
@@ -45,15 +45,15 @@ class AppUpdateChecker {
 
         do {
             _ = try await FileDownload(url: url, destination: destination).run { fraction in
-                Helpers().getLoadingViewController().setLabel(text: "Downloading...")
-                Helpers().getLoadingViewController().setProgress(amount: fraction * 100)
+                Helpers().loadingViewController.setLabel(text: "Downloading...")
+                Helpers().loadingViewController.setProgress(amount: fraction * 100)
             }
             Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
         } catch {
             Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
         }
 
-        Helpers().getLoadingViewController().closeWindow()
+        Helpers().loadingViewController.closeWindow()
     }
 
 }

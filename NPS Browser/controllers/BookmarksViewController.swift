@@ -28,7 +28,7 @@ class BookmarksViewController: NSViewController {
         
         DBManager().delete(object: storedBookmark!)
 
-        Helpers().getDataController().getDetailsViewController().toggleBookmark(comparePK: uuid!)
+        Helpers().dataController.detailsViewController.toggleBookmark(comparePK: uuid!)
 
         updateView()
     }

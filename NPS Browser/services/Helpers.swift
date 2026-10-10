@@ -22,27 +22,27 @@ class Helpers {
     }
     
     func makeNotification(title: String, subtitle: String) {
-        getSharedAppDelegate().showNotification(title: title, subtitle: subtitle)
+        sharedAppDelegate.showNotification(title: title, subtitle: subtitle)
     }
     
-    func getSharedAppDelegate() -> AppDelegate {
+    var sharedAppDelegate: AppDelegate {
         return NSApp.delegate as! AppDelegate
     }
     
-    func getWindowDelegate() -> WindowDelegate {
+    var windowDelegate: WindowDelegate {
         return NSApp.windows.first?.windowController as! WindowController
     }
     
-    func getDataController() -> DataViewController {
-        return getWindowDelegate().getDataController()
+    var dataController: DataViewController {
+        return windowDelegate.dataController
     }
         
-    func getLoadingViewController() -> LoadingViewController {
-        return getWindowDelegate().getLoadingViewController()
+    var loadingViewController: LoadingViewController {
+        return windowDelegate.loadingViewController
     }
     
     func showLoadingViewController() {
-        getDataController().presentAsSheet(getWindowDelegate().getLoadingViewController())
+        dataController.presentAsSheet(windowDelegate.loadingViewController)
     }
     
     func getRowObjectFromTableRowButton(_ sender: NSButton) -> Any? {
