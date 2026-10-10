@@ -112,19 +112,30 @@ class DownloadManager {
         return self.downloadItems
     }
     
-    func stopAndStoreDownloadList() {
+    // Stops the running downloads and keeps their resume data, so the next start continues the files.
+    func stopAndStoreDownloadList() async {
+        var running: [(item: DLItem, download: FileDownload)] = []
+
         for item in downloadItems {
             
             if (item.status == "Download Complete" || item.status == "Extraction Complete" || item.status == "Missing zRIF, license not created") {
                 item.makeViewable()
             } else {
-                if let download = item.download {
-                    Task { _ = await download.stop() }
+                item.isUserStopped = true
+                if item.isStoppable, let download = item.download {
+                    running.append((item, download))
                 }
                 item.status = "Stopped"
                 item.makeResumable()
             }
         }
+
+        for (item, download) in running {
+            if let resumeData = await download.stop() {
+                item.resumeData = resumeData
+            }
+        }
+
         let downloadList: DownloadList = DownloadList(items: downloadItems)
         
         do {
