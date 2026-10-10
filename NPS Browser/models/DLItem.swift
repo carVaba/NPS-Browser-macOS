@@ -80,7 +80,7 @@ class DLItem: NSObject, Codable {
         self.isResumable    = false
         self.isViewable     = false
         
-        actionImage = #imageLiteral(resourceName: "Stop")
+        actionImage = NSImage.symbol("pause.circle")
     }
     
     func makeViewable() {
@@ -89,7 +89,7 @@ class DLItem: NSObject, Codable {
         self.isStoppable    = false
         self.isResumable    = false
         
-        actionImage = #imageLiteral(resourceName: "Reveal")
+        actionImage = NSImage.symbol("magnifyingglass.circle")
     }
     
     func makeResumable() {
@@ -98,7 +98,7 @@ class DLItem: NSObject, Codable {
         self.isStoppable    = false
         self.isViewable     = false
         
-        actionImage = #imageLiteral(resourceName: "Start")
+        actionImage = NSImage.symbol("play.circle")
     }
     
     func makeRemovable() {
@@ -107,7 +107,7 @@ class DLItem: NSObject, Codable {
         self.isStoppable    = false
         self.isViewable     = false
         
-        actionImage = #imageLiteral(resourceName: "Reveal")
+        actionImage = NSImage.symbol("magnifyingglass.circle")
     }
 
 }

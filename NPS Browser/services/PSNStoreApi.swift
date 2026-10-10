@@ -50,6 +50,7 @@ class PSNStoreApi {
         }
 
         log.info("No image found for \(item.titleId ?? "") - \(item.name ?? "")")
-        return #imageLiteral(resourceName: "no-image")
+        let configuration = NSImage.SymbolConfiguration(pointSize: 120, weight: .thin)
+        return NSImage.symbol("photo").withSymbolConfiguration(configuration) ?? NSImage.symbol("photo")
     }
 }

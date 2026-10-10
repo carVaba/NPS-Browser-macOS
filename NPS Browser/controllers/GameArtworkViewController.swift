@@ -11,6 +11,12 @@ import Cocoa
 class GameArtworkViewController: NSViewController {
     @IBOutlet weak var imgBoxart: NSImageView!
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Only the template symbol of a missing artwork is tinted. Real artwork is not changed.
+        imgBoxart.contentTintColor = .tertiaryLabelColor
+    }
+
     override var representedObject: Any? {
         didSet {
             imgBoxart.image = nil

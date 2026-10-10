@@ -34,11 +34,11 @@ class DownloadListItemCellView: NSTableCellView {
     
     func changeImage() {
         if (item?.isResumable)! {
-            btnAction.image = #imageLiteral(resourceName: "Start")
+            btnAction.image = NSImage.symbol("play.circle")
         } else if (item?.isStoppable)! {
-            btnAction.image = #imageLiteral(resourceName: "Stop")
+            btnAction.image = NSImage.symbol("pause.circle")
         } else if (item?.isViewable)! {
-            btnAction.image = #imageLiteral(resourceName: "Reveal")
+            btnAction.image = NSImage.symbol("magnifyingglass.circle")
         }
     }
     

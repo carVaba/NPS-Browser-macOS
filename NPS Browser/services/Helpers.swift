@@ -131,3 +131,9 @@ class Helpers {
         return nil
     }
 }
+
+extension NSImage {
+    static func symbol(_ name: String) -> NSImage {
+        return NSImage(systemSymbolName: name, accessibilityDescription: nil) ?? NSImage()
+    }
+}
