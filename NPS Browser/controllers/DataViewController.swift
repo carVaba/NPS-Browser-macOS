@@ -78,9 +78,9 @@ class DataViewController: NSViewController, ToolbarDelegate {
 //        let p = NSPredicate(format: "consoleType == %@ AND fileType == %@ AND region == %@ AND name contains[c] %@ AND pkgDirectLink != 'MISSING'", itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
         var p = makePredicateString()
         p.append(" AND name contains[c] %@")
-        var q = NSPredicate(format: p, itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
+        let q = NSPredicate(format: p, itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
 
-        let objects = items!.filter(q) ?? nil
+        let objects = items!.filter(q)
         setArrayControllerContent(content: objects)
     }
     

@@ -20,6 +20,7 @@ struct HTTPStatusError: Error {
 
 enum DownloadEvent: Sendable {
     case progress(Double)
+    case waitingForConnectivity
     case finished(URL)
 }
 
@@ -34,20 +35,29 @@ actor FileDownload {
 
     private let source: Source
     private let destination: Destination
+    private let waitsForConnectivity: Bool
     private var task: URLSessionDownloadTask?
     private var isStopped = false
 
-    init(url: URL, destination: @escaping Destination) {
+    nonisolated let usesResumeData: Bool
+
+    // With `waitsForConnectivity` the task waits for the network instead of failing at once.
+    init(url: URL, waitsForConnectivity: Bool = false, destination: @escaping Destination) {
         self.source = .url(url)
+        self.usesResumeData = false
+        self.waitsForConnectivity = waitsForConnectivity
         self.destination = destination
     }
 
-    init(resumeData: Data, destination: @escaping Destination) {
+    init(resumeData: Data, waitsForConnectivity: Bool = false, destination: @escaping Destination) {
         self.source = .resumeData(resumeData)
+        self.usesResumeData = true
+        self.waitsForConnectivity = waitsForConnectivity
         self.destination = destination
     }
 
-    func run(onProgress: @MainActor @Sendable (Double) -> Void = { _ in }) async throws -> URL {
+    func run(onProgress: @MainActor @Sendable (Double) -> Void = { _ in },
+             onWaiting: @MainActor @Sendable () -> Void = {}) async throws -> URL {
         guard !isStopped else {
             throw DownloadFailure(underlying: URLError(.cancelled), resumeData: nil)
         }
@@ -56,6 +66,8 @@ actor FileDownload {
             switch event {
             case .progress(let fraction):
                 await onProgress(fraction)
+            case .waitingForConnectivity:
+                await onWaiting()
             case .finished(let fileURL):
                 return fileURL
             }
@@ -73,7 +85,10 @@ actor FileDownload {
         var continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation!
         let events = AsyncThrowingStream<DownloadEvent, Error> { continuation = $0 }
 
-        let session = URLSession(configuration: .default,
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = waitsForConnectivity
+
+        let session = URLSession(configuration: configuration,
                                  delegate: DownloadDelegate(destination: destination, continuation: continuation),
                                  delegateQueue: nil)
         let downloadTask: URLSessionDownloadTask
@@ -103,6 +118,10 @@ private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unc
     init(destination: @escaping FileDownload.Destination, continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation) {
         self.destination = destination
         self.continuation = continuation
+    }
+
+    func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
+        continuation.yield(.waitingForConnectivity)
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,

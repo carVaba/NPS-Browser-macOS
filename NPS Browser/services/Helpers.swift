@@ -60,7 +60,7 @@ class Helpers {
     
     func makeDLItem(data: Item, downloadUrl: URL, fileType: FileType) -> DLItem {
         let obj = DLItem()
-        let ctype: ConsoleType = ConsoleType.init(rawValue: data.consoleType!)!
+        let _: ConsoleType = ConsoleType.init(rawValue: data.consoleType!)!
 
         obj.titleId        = data.titleId
         obj.name            = "\(fileType.rawValue) - \(data.name!)"

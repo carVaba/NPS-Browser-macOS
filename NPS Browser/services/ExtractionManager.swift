@@ -117,7 +117,7 @@ class ExtractionManager {
         }
         
         do {
-            try task.launch()
+            try task.run()
         } catch let error as NSError {
             debugPrint(error)
         }
@@ -163,7 +163,7 @@ class ExtractionManager {
         }
         
         if (item.consoleType! == "PSP" && item.fileType! == "Game" && Defaults[.xt_compress_psp_iso]) { // == true
-            arguments.append("-c\(Defaults[.xt_compression_factor] ?? 1)")
+            arguments.append("-c\(Defaults[.xt_compression_factor])")
         }
         
         arguments.append((item.destinationURL?.path)!)

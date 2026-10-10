@@ -92,7 +92,7 @@ class Item: Object {
         obj.rap = fromObject.rap
         obj.downloadRapFile = fromObject.downloadRapFile
         
-        let pk: String = "\(fromObject.region)\(fromObject.fileType)\(fromObject.titleId)\(fromObject.contentId)"
+        let pk: String = "\(fromObject.region ?? "")\(fromObject.fileType ?? "")\(fromObject.titleId ?? "")\(fromObject.contentId ?? "")"
         obj.pk = pk
         
         return obj

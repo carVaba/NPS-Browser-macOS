@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-import UserNotifications
+@preconcurrency import UserNotifications
 import SwiftyBeaver
 import RealmSwift
 
