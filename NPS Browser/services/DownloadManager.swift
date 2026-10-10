@@ -56,7 +56,7 @@ class DownloadManager {
         makeConsoleFolder(dlItem: data)
         
         // store the download in the same object so we can stop/resume it later
-        let download = FileDownload(url: url, destination: destination)
+        let download = FileDownload(url: url, waitsForConnectivity: true, destination: destination)
         data.download = download
         data.destination = destination
         data.status = "Queued..."
@@ -71,9 +71,9 @@ class DownloadManager {
         let destination = data.destination ?? getDestination(data: data)
         let download: FileDownload
         if let resumeData = data.resumeData {
-            download = FileDownload(resumeData: resumeData, destination: destination)
+            download = FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
         } else if let url = data.downloadUrl {
-            download = FileDownload(url: url, destination: destination)
+            download = FileDownload(url: url, waitsForConnectivity: true, destination: destination)
         } else {
             return
         }
@@ -84,6 +84,7 @@ class DownloadManager {
     }
 
     func stopDownload(item: DLItem) {
+        item.isUserStopped = true
         item.status = "Stopped"
         item.makeResumable()
 
@@ -154,28 +155,29 @@ class DownloadManager {
     }
 
     private func start(item: DLItem, download: FileDownload) {
+        item.isUserStopped = false
+
         Task {
             await slots.acquire()
-
-            let fileURL: URL
-            do {
-                fileURL = try await download.run { fraction in
-                    item.status = "Downloading..."
-                    item.makeStoppable()
-                    item.progress = (fraction * 100).rounded()
-                    item.timeRemaining = fraction
-                }
-            } catch {
-                await slots.release()
-                handleFailure(error, of: item)
-                return
-            }
-
+            let outcome = await transfer(item: item, firstAttempt: download)
             // Frees the slot at once, so the next download starts while this file is verified.
             await slots.release()
 
+            let fileURL: URL
+            switch outcome {
+            case .failure(let error):
+                handleFailure(error, of: item)
+                return
+            case .success(let url):
+                fileURL = url
+            }
+
             item.destinationURL = fileURL
             await verifyChecksum(of: item)
+
+            guard !item.isCancelled else {
+                return
+            }
 
             if (item.isMore()) {
                 item.doNext?.cpackPath = item.destinationURL
@@ -185,6 +187,83 @@ class DownloadManager {
             } else {
                 ExtractionManager(item: item, downloadManager: self).start()
             }
+        }
+    }
+
+    private static let maxAttempts = 3
+
+    // Runs the download and tries again after a network error. A retry continues from the resume data.
+    private func transfer(item: DLItem, firstAttempt: FileDownload) async -> Result<URL, Error> {
+        var attempt = firstAttempt
+        var resumeFromURLUsed = false
+
+        for number in 1...Self.maxAttempts {
+            do {
+                let fileURL = try await attempt.run(onProgress: { fraction in
+                    item.status = "Downloading..."
+                    item.makeStoppable()
+                    item.progress = (fraction * 100).rounded()
+                    item.timeRemaining = fraction
+                }, onWaiting: {
+                    item.status = "Waiting for the network..."
+                })
+                return .success(fileURL)
+            } catch {
+                var canRetry = Self.isRetryable(error)
+                if !canRetry, !resumeFromURLUsed, attempt.usesResumeData, !Self.isCancelled(error) {
+                    // The resume data is not valid any more, so the file starts again.
+                    resumeFromURLUsed = true
+                    canRetry = true
+                }
+
+                guard canRetry, number < Self.maxAttempts, !item.isUserStopped else {
+                    return .failure(error)
+                }
+
+                item.status = "Retrying (\(number + 1)/\(Self.maxAttempts))..."
+                try? await Task.sleep(for: .seconds(Double(number) * 2))
+                guard !item.isUserStopped, let next = makeRetry(for: item, after: error) else {
+                    return .failure(error)
+                }
+
+                item.download = next
+                attempt = next
+            }
+        }
+        return .failure(URLError(.unknown))
+    }
+
+    private func makeRetry(for item: DLItem, after error: Error) -> FileDownload? {
+        let destination = item.destination ?? getDestination(data: item)
+        if let resumeData = (error as? DownloadFailure)?.resumeData {
+            return FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
+        }
+        guard let url = item.downloadUrl else {
+            return nil
+        }
+        return FileDownload(url: url, waitsForConnectivity: true, destination: destination)
+    }
+
+    private static func isCancelled(_ error: Error) -> Bool {
+        (error as? DownloadFailure)?.isCancelled ?? false
+    }
+
+    private static func isRetryable(_ error: Error) -> Bool {
+        guard let failure = error as? DownloadFailure else {
+            return false
+        }
+        if let status = failure.underlying as? HTTPStatusError {
+            return status.statusCode >= 500
+        }
+        guard let urlError = failure.underlying as? URLError else {
+            return false
+        }
+        switch urlError.code {
+        case .networkConnectionLost, .timedOut, .notConnectedToInternet, .cannotConnectToHost,
+             .dnsLookupFailed, .cannotFindHost:
+            return true
+        default:
+            return false
         }
     }
 

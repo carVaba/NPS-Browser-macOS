@@ -26,6 +26,9 @@ class DLItem: NSObject, Codable {
     @objc dynamic var timeRemaining     : TimeInterval = 0
     var download                        : FileDownload?
     var resumeData                      : Data?
+    // Set when the user stops or cancels, so a retry must not start.
+    var isUserStopped                   = false
+    var isCancelled                     = false
     var destination                     : FileDownload.Destination?
     @objc dynamic var destinationURL    : URL?
     @objc dynamic var isStoppable      : Bool = false
