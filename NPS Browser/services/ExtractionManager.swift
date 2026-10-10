@@ -9,7 +9,6 @@
 import Foundation
 import Cocoa
 import Zip
-//import Files
 
 @MainActor
 class ExtractionManager {
