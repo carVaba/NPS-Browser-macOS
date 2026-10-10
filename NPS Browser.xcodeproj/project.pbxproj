@@ -7,9 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		050876814C9AA6D9E9E89473 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DFAF9F30DD22BCA08660E458 /* RealmSwift */; };
-		28FCEAD2185F1E22238C4AA8 /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = 069DD84B460FF2A6560433FE /* Promises */; };
-		3D7604F11B5248825766A0B2 /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 9E3EE7C239E1A9FB359BCDAE /* Fuzi */; };
+		00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = AAB24A9706398593467C1B85 /* SwiftyBeaver */; };
+		40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 8B47C8806E59F3B66C8CC4A0 /* Fuzi */; };
 		5108B79E211641190065BA71 /* TSVData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5108B79D211641190065BA71 /* TSVData.swift */; };
 		512175A820A7D28B00772C86 /* WindowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512175A720A7D28B00772C86 /* WindowDelegate.swift */; };
 		5139DF87209F6DE9004F65F9 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF86209F6DE9004F65F9 /* WindowController.swift */; };
@@ -54,9 +53,11 @@
 		51EBE8212094E094005D44DC /* DataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51EBE8202094E094005D44DC /* DataViewController.swift */; };
 		51EBE8262094E095005D44DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8252094E095005D44DC /* Assets.xcassets */; };
 		51EBE8292094E095005D44DC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8272094E095005D44DC /* Main.storyboard */; };
-		63778C1D01BB265487220752 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = E5A90321FC6DC4AED878E211 /* Zip */; };
-		6F1D045B0F7EF61A1EA4CDBA /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = C1D50C4798EAA862E7C9BFA7 /* SwiftyBeaver */; };
-		8D522223B24246E4ED4DD4FC /* Queuer in Frameworks */ = {isa = PBXBuildFile; productRef = D8808B2E098A0E4721828918 /* Queuer */; };
+		7278423C289C32418CAD17D7 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = FB15D42715B0D1EDD54B1288 /* Zip */; };
+		97E108BE9B0608A2DB0FF5E9 /* Queuer in Frameworks */ = {isa = PBXBuildFile; productRef = DCC12AEFCFCA122BD56A3A19 /* Queuer */; };
+		B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; };
+		EB6969F5EB3C9B797561B9AF /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = F1C21A4F02D9981315BF4124 /* Promises */; };
+		F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5472C76A782FF1648B21CF2 /* HTTPClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -109,6 +110,7 @@
 		51EBE82A2094E095005D44DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96E8D4B622CD0BA000FA4694 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		96E8D4BA22CD0F6900FA4694 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		F5472C76A782FF1648B21CF2 /* HTTPClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,12 +118,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				28FCEAD2185F1E22238C4AA8 /* Promises in Frameworks */,
-				8D522223B24246E4ED4DD4FC /* Queuer in Frameworks */,
-				6F1D045B0F7EF61A1EA4CDBA /* SwiftyBeaver in Frameworks */,
-				63778C1D01BB265487220752 /* Zip in Frameworks */,
-				050876814C9AA6D9E9E89473 /* RealmSwift in Frameworks */,
-				3D7604F11B5248825766A0B2 /* Fuzi in Frameworks */,
+				EB6969F5EB3C9B797561B9AF /* Promises in Frameworks */,
+				97E108BE9B0608A2DB0FF5E9 /* Queuer in Frameworks */,
+				00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */,
+				7278423C289C32418CAD17D7 /* Zip in Frameworks */,
+				B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */,
+				40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +141,7 @@
 				5192CE7E211E18EA004A2E90 /* NetworkManager.swift */,
 				5192CE82211E31B4004A2E90 /* DBManager.swift */,
 				51E6684C2121447600FC154A /* AppUpdateChecker.swift */,
+				F5472C76A782FF1648B21CF2 /* HTTPClient.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -278,12 +281,12 @@
 			);
 			name = "NPS Browser";
 			packageProductDependencies = (
-				069DD84B460FF2A6560433FE /* Promises */,
-				D8808B2E098A0E4721828918 /* Queuer */,
-				C1D50C4798EAA862E7C9BFA7 /* SwiftyBeaver */,
-				E5A90321FC6DC4AED878E211 /* Zip */,
-				DFAF9F30DD22BCA08660E458 /* RealmSwift */,
-				9E3EE7C239E1A9FB359BCDAE /* Fuzi */,
+				F1C21A4F02D9981315BF4124 /* Promises */,
+				DCC12AEFCFCA122BD56A3A19 /* Queuer */,
+				AAB24A9706398593467C1B85 /* SwiftyBeaver */,
+				FB15D42715B0D1EDD54B1288 /* Zip */,
+				307EFCE15643D2468550A11A /* RealmSwift */,
+				8B47C8806E59F3B66C8CC4A0 /* Fuzi */,
 			);
 			productName = "NPS Browser";
 			productReference = 51EBE81B2094E094005D44DC /* NPS Browser.app */;
@@ -312,7 +315,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 51EBE8162094E094005D44DC /* Build configuration list for PBXProject "proj" */;
+			buildConfigurationList = 51EBE8162094E094005D44DC /* Build configuration list for PBXProject "NPS Browser" */;
 			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -323,12 +326,12 @@
 			);
 			mainGroup = 51EBE8122094E094005D44DC;
 			packageReferences = (
-				5C44DAB618E2774CF4D23E22 /* XCRemoteSwiftPackageReference "promises" */,
-				4CD7353CF29221ADF3A055FE /* XCRemoteSwiftPackageReference "Queuer" */,
-				5B2FD14BCD3AFA1B8CAA7A17 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
-				6BA1C9A1AA5F64781135A493 /* XCRemoteSwiftPackageReference "Zip" */,
-				F9EE8A0AEA906CC3E4D476C3 /* XCRemoteSwiftPackageReference "realm-swift" */,
-				97BA773C44D8BA7884AA6179 /* XCRemoteSwiftPackageReference "Fuzi" */,
+				047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */,
+				ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */,
+				92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
+				E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */,
+				0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */,
+				8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */,
 			);
 			productRefGroup = 51EBE81C2094E094005D44DC /* Products */;
 			projectDirPath = "";
@@ -398,6 +401,7 @@
 				5181948E20DDB52C009282AB /* NSTableView+keydown.swift in Sources */,
 				5108B79E211641190065BA71 /* TSVData.swift in Sources */,
 				5192CE8A211F19FA004A2E90 /* RealmStorageContext.swift in Sources */,
+				F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,7 +606,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		51EBE8162094E094005D44DC /* Build configuration list for PBXProject "proj" */ = {
+		51EBE8162094E094005D44DC /* Build configuration list for PBXProject "NPS Browser" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				51EBE82C2094E095005D44DC /* Debug */,
@@ -623,23 +627,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4CD7353CF29221ADF3A055FE /* XCRemoteSwiftPackageReference "Queuer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/FabrizioBrancati/Queuer.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
-		5B2FD14BCD3AFA1B8CAA7A17 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-		5C44DAB618E2774CF4D23E22 /* XCRemoteSwiftPackageReference "promises" */ = {
+		047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/promises.git";
 			requirement = {
@@ -647,23 +635,7 @@
 				minimumVersion = 2.4.0;
 			};
 		};
-		6BA1C9A1AA5F64781135A493 /* XCRemoteSwiftPackageReference "Zip" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/marmelroy/Zip.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.1.2;
-			};
-		};
-		97BA773C44D8BA7884AA6179 /* XCRemoteSwiftPackageReference "Fuzi" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cezheng/Fuzi.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.1.3;
-			};
-		};
-		F9EE8A0AEA906CC3E4D476C3 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+		0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/realm/realm-swift.git";
 			requirement = {
@@ -671,37 +643,69 @@
 				minimumVersion = 20.0.0;
 			};
 		};
+		8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cezheng/Fuzi.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.3;
+			};
+		};
+		92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+		ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FabrizioBrancati/Queuer.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/Zip.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		069DD84B460FF2A6560433FE /* Promises */ = {
+		307EFCE15643D2468550A11A /* RealmSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5C44DAB618E2774CF4D23E22 /* XCRemoteSwiftPackageReference "promises" */;
-			productName = Promises;
-		};
-		9E3EE7C239E1A9FB359BCDAE /* Fuzi */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 97BA773C44D8BA7884AA6179 /* XCRemoteSwiftPackageReference "Fuzi" */;
-			productName = Fuzi;
-		};
-		C1D50C4798EAA862E7C9BFA7 /* SwiftyBeaver */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5B2FD14BCD3AFA1B8CAA7A17 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
-			productName = SwiftyBeaver;
-		};
-		D8808B2E098A0E4721828918 /* Queuer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4CD7353CF29221ADF3A055FE /* XCRemoteSwiftPackageReference "Queuer" */;
-			productName = Queuer;
-		};
-		DFAF9F30DD22BCA08660E458 /* RealmSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F9EE8A0AEA906CC3E4D476C3 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			package = 0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */;
 			productName = RealmSwift;
 		};
-		E5A90321FC6DC4AED878E211 /* Zip */ = {
+		8B47C8806E59F3B66C8CC4A0 /* Fuzi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6BA1C9A1AA5F64781135A493 /* XCRemoteSwiftPackageReference "Zip" */;
+			package = 8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */;
+			productName = Fuzi;
+		};
+		AAB24A9706398593467C1B85 /* SwiftyBeaver */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
+			productName = SwiftyBeaver;
+		};
+		DCC12AEFCFCA122BD56A3A19 /* Queuer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */;
+			productName = Queuer;
+		};
+		F1C21A4F02D9981315BF4124 /* Promises */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */;
+			productName = Promises;
+		};
+		FB15D42715B0D1EDD54B1288 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
 		};
 /* End XCSwiftPackageProductDependency section */

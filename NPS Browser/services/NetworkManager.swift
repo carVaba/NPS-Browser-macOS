@@ -6,8 +6,8 @@
 //  Copyright © 2018 JK3Y. All rights reserved.
 //
 
+import Foundation
 import Promises
-import Alamofire
 
 class NetworkManager {
     
@@ -39,24 +39,18 @@ class NetworkManager {
             Helpers().getLoadingViewController().setLabel(text: "Requesting data... (step 1/5)")
             Helpers().getLoadingViewController().setProgress(amount: 20)
             
-            Alamofire.request(url)
-                .downloadProgress { progress in
-                    self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
-                    self.windowDelegate.getLoadingViewController().setProgress(amount: progress.fractionCompleted / 20)
+            HTTPClient.fetchString(from: url, progress: { fraction in
+                self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
+                self.windowDelegate.getLoadingViewController().setProgress(amount: fraction / 20)
+            }) { result in
+                switch result {
+                case .success(let text):
+                    self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
+                    self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+                    fulfill(Parser().parseTSV(data: text, itemType: self.itemType))
+                case .failure(let error):
+                    reject(error)
                 }
-                
-                .responseString { response in
-                    let utf8Text = String(data: response.data!, encoding: .utf8)
-                    
-                    if (response.result.isSuccess) {
-                        self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
-                        self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
-                        let parsedTSV = Parser().parseTSV(data: utf8Text!, itemType: self.itemType)
-                        fulfill(parsedTSV)
-                    }
-                    else {
-                        reject(response.error!)
-                    }
             }
         }
             .then { _ in
@@ -137,24 +131,19 @@ class NetworkManager {
             Helpers().getLoadingViewController().setLabel(text: "Requesting Comp Packs... (step 1/5)")
             Helpers().getLoadingViewController().setProgress(amount: 20)
 
-            Alamofire.request(url)
-                .downloadProgress { progress in
-                    self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
-                    self.windowDelegate.getLoadingViewController().setProgress(amount: progress.fractionCompleted / 20)
+            HTTPClient.fetchString(from: url, progress: { fraction in
+                self.windowDelegate.getLoadingViewController().setLabel(text: "Receiving data... (step 2/5)")
+                self.windowDelegate.getLoadingViewController().setProgress(amount: fraction / 20)
+            }) { result in
+                switch result {
+                case .success(let text):
+                    self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
+                    self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
+                    fulfill(Parser().parseCompatPackEntries(data: text, isPatch: isPatch, typeName: typeName))
+                case .failure(let error):
+                    reject(error)
                 }
-                .responseString { response in
-                    let utf8Text = String(data: response.data!, encoding: .utf8)
-
-                    if (response.result.isSuccess) {
-                        self.windowDelegate.getLoadingViewController().setLabel(text: "Preparing... (step 3/5)")
-                        self.windowDelegate.getLoadingViewController().setProgress(amount: 20)
-                        let parsed = Parser().parseCompatPackEntries(data: utf8Text!, isPatch: isPatch, typeName: typeName)
-                        fulfill(parsed)
-                    }
-                    else {
-                        reject(response.error!)
-                    }
-                }
+            }
             }
             .then { result in
                 self.windowDelegate.getLoadingViewController().setLabel(text: "Removing old values... (step 4/5)")
@@ -219,20 +208,19 @@ class NetworkManager {
 
         return {
                 Promise<URL> { fulfill, reject in
-                Alamofire.request(url)
-                    .responseString { response in
-                        
-                        if let data = response.value {
-                            let updateurl = Parser().parseUpdateXML(data: data)
-                            if (updateurl != nil) {
-                                fulfill(updateurl!)
-                            }
-                            return
-
-                        } else {
-                            reject(response.error!)
+                guard let requestURL = URL(string: url) else {
+                    reject(URLError(.badURL))
+                    return
+                }
+                HTTPClient.fetchString(from: requestURL) { result in
+                    switch result {
+                    case .success(let data):
+                        if let updateurl = Parser().parseUpdateXML(data: data) {
+                            fulfill(updateurl)
                         }
-                        
+                    case .failure(let error):
+                        reject(error)
+                    }
                 }
             }
         }

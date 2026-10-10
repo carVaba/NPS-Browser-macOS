@@ -35,8 +35,9 @@ class DetailsViewController: NSViewController {
         var baseDLItem: DLItem? = nil
 
         if (chkDLGame.state == .on) {
-            let url = try? obj.pkgDirectLink!.asURL()
-            self.sendDLData(url: url!, fileType: .Game)
+            if let link = obj.pkgDirectLink, let url = URL(string: link) {
+                self.sendDLData(url: url, fileType: .Game)
+            }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
             let url = NetworkManager().getUpdateXMLURLFromHMAC(titleId: getROManagedObject().titleId!)

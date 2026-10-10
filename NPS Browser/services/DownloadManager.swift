@@ -8,7 +8,6 @@
 
 import Cocoa
 import Queuer
-import Alamofire
 import Promises
 //import Files
 
@@ -21,10 +20,10 @@ class DownloadManager {
         restoreDownloadList()
     }
     
-    func getDestination(data: DLItem) -> DownloadRequest.DownloadFileDestination {
-        let destination: DownloadRequest.DownloadFileDestination = { request, response in
+    func getDestination(data: DLItem) -> FileDownload.Destination {
+        let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
-            let pathComponent = response.suggestedFilename!
+            let pathComponent = suggestedFilename ?? data.downloadUrl?.lastPathComponent ?? "download.pkg"
             let cf = data.consoleType
             
             var path: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
@@ -34,8 +33,7 @@ class DownloadManager {
             path.appendPathComponent(pathComponent)
 
             let decodedurl = path.path.removingPercentEncoding
-            let url = URL(fileURLWithPath: decodedurl!)
-            return (url, [.removePreviousFile, .createIntermediateDirectories])
+            return URL(fileURLWithPath: decodedurl ?? path.path)
         }
         return destination
     }
@@ -58,9 +56,11 @@ class DownloadManager {
         
         makeConsoleFolder(dlItem: data)
         
-        let request = Alamofire.download(data.downloadUrl!, to: destination)
+        let request = FileDownload(url: data.downloadUrl!, destination: destination)
         data.request = request
         data.destination = destination
+        data.status = "Queued..."
+        data.makeStoppable()
             
         // add object to downloadItems array
         downloadItems.insert(data, at: 0)
@@ -75,7 +75,15 @@ class DownloadManager {
     }
     
     func resumeDownload(data: DLItem) {
-        let request = Alamofire.download(resumingWith: data.resumeData!, to: data.destination)
+        let destination = data.destination ?? getDestination(data: data)
+        let request: FileDownload
+        if let resumeData = data.resumeData {
+            request = FileDownload(resumeData: resumeData, destination: destination)
+        } else if let url = data.downloadUrl {
+            request = FileDownload(url: url, destination: destination)
+        } else {
+            return
+        }
         data.request = request
         let op = makeConucurrentOperation(dlItem: data, request: request)
         queue.addOperation(op)
@@ -138,41 +146,45 @@ class DownloadManager {
         }
     }
 
-    func makeConucurrentOperation(dlItem: DLItem, request: DownloadRequest) -> ConcurrentOperation {
-        return ConcurrentOperation { _ in
-            dlItem.status = "Queued..."
-            
-            request.downloadProgress { progress in
+    func makeConucurrentOperation(dlItem: DLItem, request: FileDownload) -> ConcurrentOperation {
+        return ConcurrentOperation { operation in
+            request.onProgress = { fraction in
                 dlItem.status = "Downloading..."
                 dlItem.makeStoppable()
-                dlItem.progress = (progress.fractionCompleted * 100).rounded()
-                dlItem.timeRemaining = progress.fractionCompleted
-                }
-                .responseData { response in
-                    response.result.ifSuccess {
-                        dlItem.destinationURL = response.destinationURL
-                        if (dlItem.isMore()) {
-                            dlItem.doNext?.cpackPath = dlItem.destinationURL
-                            dlItem.status = "Waiting..."
-
-                            self.addToDownloadQueue(data: dlItem.doNext!)
-                        } else {
-                            ExtractionManager(item: dlItem, downloadManager: self).start()
-                        }
-                    }
-                    response.result.ifFailure {
-                        guard let resumeData = response.resumeData else {
-                            dlItem.status = "Failed! \(response.error!)"
-                            log.error(response.error)
-                            
-                            dlItem.makeRemovable()
-                            return
-                        }
-                        dlItem.status = "Stopped"
-                        dlItem.resumeData = resumeData
-                        dlItem.makeResumable()
-                    }
+                dlItem.progress = (fraction * 100).rounded()
+                dlItem.timeRemaining = fraction
             }
+            request.onFinish = { result in
+                // Frees the queue slot at once, so the next download can start.
+                operation.finish()
+
+                switch result {
+                case .success(let fileURL):
+                    dlItem.destinationURL = fileURL
+                    if (dlItem.isMore()) {
+                        dlItem.doNext?.cpackPath = dlItem.destinationURL
+                        dlItem.status = "Waiting..."
+
+                        self.addToDownloadQueue(data: dlItem.doNext!)
+                    } else {
+                        ExtractionManager(item: dlItem, downloadManager: self).start()
+                    }
+                case .failure(let failure):
+                    let wasCancelled = (failure.underlying as? URLError)?.code == .cancelled
+                    if wasCancelled || failure.resumeData != nil {
+                        dlItem.status = "Stopped"
+                        dlItem.resumeData = failure.resumeData
+                        dlItem.makeResumable()
+                    } else {
+                        dlItem.status = "Failed! \(failure.underlying.localizedDescription)"
+                        log.error(failure.underlying)
+
+                        dlItem.makeRemovable()
+                    }
+                }
+            }
+
+            request.start()
         }
     }
 }

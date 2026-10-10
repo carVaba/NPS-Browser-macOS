@@ -7,7 +7,6 @@
 //
 
 import AppKit
-import Alamofire
 
 struct DownloadList: Codable {
     var items: [DLItem]
@@ -24,9 +23,9 @@ class DLItem: NSObject, Codable {
     @objc dynamic var zrif              : String?
     @objc dynamic var status            : String?
     @objc dynamic var timeRemaining     : TimeInterval = 0
-    var request                         : Alamofire.Request?
+    var request                         : FileDownload?
     var resumeData                      : Data?
-    var destination                     : DownloadRequest.DownloadFileDestination?
+    var destination                     : FileDownload.Destination?
     @objc dynamic var destinationURL    : URL?
     @objc dynamic var isStoppable      : Bool = false
     @objc dynamic var isViewable        : Bool = false

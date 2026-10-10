@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         do {
             try Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
         } catch {
-            dlFolder = try! NSHomeDirectory().asURL().appendingPathComponent("Downloads")
+            dlFolder = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
             Defaults.set(dlFolder!.absoluteURL, forKey: "dl_library_location")
             try! Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
         }

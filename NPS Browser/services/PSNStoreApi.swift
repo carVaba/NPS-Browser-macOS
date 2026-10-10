@@ -6,9 +6,7 @@
 //  Copyright © 2018 JK3Y. All rights reserved.
 //
 
-import Foundation
-import Alamofire
-import AlamofireImage
+import Cocoa
 import Promises
 
 class PSNStoreApi {
@@ -40,19 +38,16 @@ class PSNStoreApi {
         return URL(string: psnUrl)!
     }
     
-    func getImage() -> Promise<Image> {
+    func getImage() -> Promise<NSImage> {
         let url = getImageURL()
-        return Promise<Image> {fulfill, reject in
-            Alamofire.request(url)
-                .responseImage { response in
-                    if response.result.isSuccess {
-                        if let image = response.result.value {
-                            fulfill(image)
-                        }
-                    } else {
-                        log.info("No image found for \(self.item.titleId) - \(self.item.name)")
-                        fulfill(#imageLiteral(resourceName: "no-image"))
-                    }
+        return Promise<NSImage> { fulfill, _ in
+            HTTPClient.fetchData(from: url) { result in
+                if case .success(let data) = result, let image = NSImage(data: data) {
+                    fulfill(image)
+                } else {
+                    log.info("No image found for \(self.item.titleId ?? "") - \(self.item.name ?? "")")
+                    fulfill(#imageLiteral(resourceName: "no-image"))
+                }
             }
         }
     }

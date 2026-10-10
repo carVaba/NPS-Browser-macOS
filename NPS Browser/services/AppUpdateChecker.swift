@@ -8,29 +8,29 @@
 
 import Foundation
 import Promises
-import Alamofire
 
 class AppUpdateChecker {
     
     func fetchLatest(successHandler: @escaping ((_ tagName: String, _ browserDownloadURL: String) -> ()) ) {
         let url = "https://api.github.com/repos/JK3Y/NPS-Browser-macOS/releases/latest"
         
-        Alamofire.request(url)
-            .responseJSON { response in
-                
-                if response.result.isSuccess {
-                    let gHLatestRelease = try? newJSONDecoder().decode(GHLatestRelease.self, from: response.data!)
-                    let ghVersion = gHLatestRelease?.tagName.replacingOccurrences(of: "v", with: "")
-                    var browserDownloadUrl: String? = nil
-                    for asset in (gHLatestRelease?.assets)! {
-                        browserDownloadUrl = asset.browserDownloadURL
-                    }
-                    
-                    successHandler(ghVersion!, browserDownloadUrl!)
-                } else {
-                    log.error(response.error!)
-//                    Helpers().makeAlert(messageText: "App Update", informativeText: "There is no new update available.", alertStyle: .informational)
+        guard let requestURL = URL(string: url) else {
+            return
+        }
+
+        HTTPClient.fetchData(from: requestURL) { result in
+            switch result {
+            case .success(let data):
+                guard let release = try? newJSONDecoder().decode(GHLatestRelease.self, from: data),
+                      let browserDownloadUrl = release.assets.last?.browserDownloadURL else {
+                    log.error("Could not read the latest release information.")
+                    return
                 }
+                let ghVersion = release.tagName.replacingOccurrences(of: "v", with: "")
+                successHandler(ghVersion, browserDownloadUrl)
+            case .failure(let error):
+                log.error(error)
+            }
         }
     }
     
@@ -39,30 +39,30 @@ class AppUpdateChecker {
         Helpers().showLoadingViewController()
         Helpers().getLoadingViewController().setLabel(text: "Fetching update...")
         
-        let destination: DownloadRequest.DownloadFileDestination = { request, response in
+        let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
-            let pathComponent = response.suggestedFilename!
             var url: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
-            url.appendPathComponent(pathComponent)
+            url.appendPathComponent(suggestedFilename ?? "NPS-Browser-update.pkg")
 
-            return (url, [.removePreviousFile, .createIntermediateDirectories])
+            return url
         }
-        
-        Alamofire.download(url, to: destination)
-            .downloadProgress { progress in
-                Helpers().getLoadingViewController().setLabel(text: "Downloading...")
-                Helpers().getLoadingViewController().setProgress(amount: progress.fractionCompleted * 100)
+
+        let download = FileDownload(url: url, destination: destination)
+        download.onProgress = { fraction in
+            Helpers().getLoadingViewController().setLabel(text: "Downloading...")
+            Helpers().getLoadingViewController().setProgress(amount: fraction * 100)
         }
-            .responseString { response in
-                response.result.ifSuccess {
-                    Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
-                }
-                response.result.ifFailure {
-                    Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
-                }
-                
-                Helpers().getLoadingViewController().closeWindow()
+        download.onFinish = { result in
+            switch result {
+            case .success:
+                Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
+            case .failure:
+                Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
+            }
+
+            Helpers().getLoadingViewController().closeWindow()
         }
+        download.start()
     }
     
 }
