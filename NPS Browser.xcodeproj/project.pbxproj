@@ -54,9 +54,7 @@
 		51EBE8262094E095005D44DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8252094E095005D44DC /* Assets.xcassets */; };
 		51EBE8292094E095005D44DC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8272094E095005D44DC /* Main.storyboard */; };
 		7278423C289C32418CAD17D7 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = FB15D42715B0D1EDD54B1288 /* Zip */; };
-		97E108BE9B0608A2DB0FF5E9 /* Queuer in Frameworks */ = {isa = PBXBuildFile; productRef = DCC12AEFCFCA122BD56A3A19 /* Queuer */; };
 		B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; };
-		EB6969F5EB3C9B797561B9AF /* Promises in Frameworks */ = {isa = PBXBuildFile; productRef = F1C21A4F02D9981315BF4124 /* Promises */; };
 		F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5472C76A782FF1648B21CF2 /* HTTPClient.swift */; };
 /* End PBXBuildFile section */
 
@@ -118,8 +116,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB6969F5EB3C9B797561B9AF /* Promises in Frameworks */,
-				97E108BE9B0608A2DB0FF5E9 /* Queuer in Frameworks */,
 				00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */,
 				7278423C289C32418CAD17D7 /* Zip in Frameworks */,
 				B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */,
@@ -281,8 +277,6 @@
 			);
 			name = "NPS Browser";
 			packageProductDependencies = (
-				F1C21A4F02D9981315BF4124 /* Promises */,
-				DCC12AEFCFCA122BD56A3A19 /* Queuer */,
 				AAB24A9706398593467C1B85 /* SwiftyBeaver */,
 				FB15D42715B0D1EDD54B1288 /* Zip */,
 				307EFCE15643D2468550A11A /* RealmSwift */,
@@ -326,8 +320,6 @@
 			);
 			mainGroup = 51EBE8122094E094005D44DC;
 			packageReferences = (
-				047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */,
-				ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */,
 				92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */,
 				0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */,
@@ -627,14 +619,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/promises.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
-			};
-		};
 		0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/realm/realm-swift.git";
@@ -657,14 +641,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
-			};
-		};
-		ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/FabrizioBrancati/Queuer.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
 			};
 		};
 		E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */ = {
@@ -692,16 +668,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
 			productName = SwiftyBeaver;
-		};
-		DCC12AEFCFCA122BD56A3A19 /* Queuer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ADC6E4B0E6B2E1ACDE6A127A /* XCRemoteSwiftPackageReference "Queuer" */;
-			productName = Queuer;
-		};
-		F1C21A4F02D9981315BF4124 /* Promises */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 047358BF679F47A59614DD30 /* XCRemoteSwiftPackageReference "promises" */;
-			productName = Promises;
 		};
 		FB15D42715B0D1EDD54B1288 /* Zip */ = {
 			isa = XCSwiftPackageProductDependency;
