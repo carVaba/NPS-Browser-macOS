@@ -28,8 +28,10 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         applyToolbarSymbols()
     }
 
+    private static let downloadsIdentifier = "C9BC1AE3-0F74-4220-AC66-B1F4FA0B5EAD"
+
     private static let toolbarSymbols = [
-        "C9BC1AE3-0F74-4220-AC66-B1F4FA0B5EAD": "arrow.down.circle", // Downloads
+        downloadsIdentifier: "arrow.down.circle",
         "EDF695BA-2023-4936-9543-EAD5EC5E465D": "book",              // Bookmarks
         "2E5BAEB9-691D-4ED3-88EA-C48B89CD7BD9": "arrow.clockwise"    // Reload
     ]
@@ -48,6 +50,11 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
                 self?.applySymbol(to: item)
             }
         }
+    }
+
+    var downloadsButton: NSView? {
+        let item = window?.toolbar?.items.first { $0.itemIdentifier.rawValue == Self.downloadsIdentifier }
+        return item?.view
     }
 
     private func applySymbol(to item: NSToolbarItem) {

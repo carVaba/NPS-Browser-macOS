@@ -38,6 +38,9 @@ class DetailsViewController: NSViewController {
     @IBAction func btnDownloadClicked(_ sender: Any) {
         let obj = getROManagedObject()
 
+        let artwork = getBoxartViewController()
+        DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart)
+
         var baseDLItem: DLItem? = nil
 
         if (chkDLGame.state == .on) {

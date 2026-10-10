@@ -54,6 +54,7 @@
 		51EBE8262094E095005D44DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8252094E095005D44DC /* Assets.xcassets */; };
 		51EBE8292094E095005D44DC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8272094E095005D44DC /* Main.storyboard */; };
 		7278423C289C32418CAD17D7 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = FB15D42715B0D1EDD54B1288 /* Zip */; };
+		AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */; };
 		B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; };
 		F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5472C76A782FF1648B21CF2 /* HTTPClient.swift */; };
 /* End PBXBuildFile section */
@@ -108,6 +109,7 @@
 		51EBE82A2094E095005D44DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96E8D4B622CD0BA000FA4694 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		96E8D4BA22CD0F6900FA4694 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadFlyAnimation.swift; sourceTree = "<group>"; };
 		F5472C76A782FF1648B21CF2 /* HTTPClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -214,6 +216,7 @@
 			children = (
 				519F0D7220CC852C00332987 /* BookmarkListItemCellView.swift */,
 				51B12A1820B0CD1E00E83844 /* DownloadListItemCellView.swift */,
+				B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */,
 			);
 			path = views;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				5108B79E211641190065BA71 /* TSVData.swift in Sources */,
 				5192CE8A211F19FA004A2E90 /* RealmStorageContext.swift in Sources */,
 				F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */,
+				AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,6 +6,8 @@
 //  Copyright © 2018 JK3Y. All rights reserved.
 //
 
+import Cocoa
+
 protocol WindowDelegate {
     var region: String { get }
     var searchString: String { get }
@@ -14,4 +16,5 @@ protocol WindowDelegate {
     
     var dataController: DataViewController { get }
     var loadingViewController: LoadingViewController { get }
+    var downloadsButton: NSView? { get }
 }

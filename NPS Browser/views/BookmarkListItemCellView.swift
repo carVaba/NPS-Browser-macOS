@@ -25,6 +25,7 @@ class BookmarkListItemCellView: NSTableCellView {
     }
     
     @IBAction func btnDownloadClicked(_ sender: NSButton) {
+        DownloadFlyAnimation.run(image: sender.image, from: sender)
         
         // TODO: Add all 3 download types to DL list
         
