@@ -9,6 +9,7 @@
 import Foundation
 import Promises
 
+@MainActor
 class NetworkManager {
     
     let windowDelegate: WindowDelegate = Helpers().getWindowDelegate()

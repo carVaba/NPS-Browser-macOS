@@ -43,9 +43,7 @@ class DownloadListItemCellView: NSTableCellView {
     }
     
     func stopRequest() {
-        item!.request?.cancel()
-        item!.status = "Stopped"
-        item!.makeResumable()
+        Helpers().getSharedAppDelegate().downloadManager.stopDownload(item: item!)
     }
     
     func viewFile() {

@@ -14,6 +14,7 @@ import RealmSwift
 let log = SwiftyBeaver.self
 
 @main
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     
     lazy var downloadManager: DownloadManager = DownloadManager()

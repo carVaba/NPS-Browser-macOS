@@ -7,38 +7,34 @@
 //
 
 import Foundation
-import Promises
 
 class AppUpdateChecker {
-    
-    func fetchLatest(successHandler: @escaping ((_ tagName: String, _ browserDownloadURL: String) -> ()) ) {
-        let url = "https://api.github.com/repos/JK3Y/NPS-Browser-macOS/releases/latest"
-        
-        guard let requestURL = URL(string: url) else {
-            return
+
+    struct LatestRelease {
+        let version: String
+        let browserDownloadURL: String
+    }
+
+    func fetchLatest() async throws -> LatestRelease {
+        guard let url = URL(string: "https://api.github.com/repos/JK3Y/NPS-Browser-macOS/releases/latest") else {
+            throw URLError(.badURL)
         }
 
-        HTTPClient.fetchData(from: requestURL) { result in
-            switch result {
-            case .success(let data):
-                guard let release = try? newJSONDecoder().decode(GHLatestRelease.self, from: data),
-                      let browserDownloadUrl = release.assets.last?.browserDownloadURL else {
-                    log.error("Could not read the latest release information.")
-                    return
-                }
-                let ghVersion = release.tagName.replacingOccurrences(of: "v", with: "")
-                successHandler(ghVersion, browserDownloadUrl)
-            case .failure(let error):
-                log.error(error)
-            }
+        let data = try await HTTPClient.data(from: url)
+        let release = try newJSONDecoder().decode(GHLatestRelease.self, from: data)
+        guard let browserDownloadURL = release.assets.last?.browserDownloadURL else {
+            throw URLError(.cannotParseResponse)
         }
+
+        return LatestRelease(version: release.tagName.replacingOccurrences(of: "v", with: ""),
+                             browserDownloadURL: browserDownloadURL)
     }
-    
-    func downloadUpdate(url: URL) {
-        
+
+    @MainActor
+    func downloadUpdate(url: URL) async {
         Helpers().showLoadingViewController()
         Helpers().getLoadingViewController().setLabel(text: "Fetching update...")
-        
+
         let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
             var url: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
@@ -47,22 +43,17 @@ class AppUpdateChecker {
             return url
         }
 
-        let download = FileDownload(url: url, destination: destination)
-        download.onProgress = { fraction in
-            Helpers().getLoadingViewController().setLabel(text: "Downloading...")
-            Helpers().getLoadingViewController().setProgress(amount: fraction * 100)
-        }
-        download.onFinish = { result in
-            switch result {
-            case .success:
-                Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
-            case .failure:
-                Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
+        do {
+            _ = try await FileDownload(url: url, destination: destination).run { fraction in
+                Helpers().getLoadingViewController().setLabel(text: "Downloading...")
+                Helpers().getLoadingViewController().setProgress(amount: fraction * 100)
             }
-
-            Helpers().getLoadingViewController().closeWindow()
+            Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
+        } catch {
+            Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
         }
-        download.start()
+
+        Helpers().getLoadingViewController().closeWindow()
     }
-    
+
 }

@@ -8,35 +8,30 @@
 
 import Cocoa
 import CryptoKit
-import Queuer
-import Promises
-//import Files
 
+@MainActor
 class DownloadManager {
     
     var downloadItems: [DLItem] = []
-    let queue = Queuer(name: "DLQueue", maxConcurrentOperationCount: Defaults[.dl_concurrent_downloads], qualityOfService: .default)
+    private let slots = DownloadSlots(limit: Defaults[.dl_concurrent_downloads])
     
     init() {
         restoreDownloadList()
     }
     
     func getDestination(data: DLItem) -> FileDownload.Destination {
-        let destination: FileDownload.Destination = { suggestedFilename in
-            // .pkg filename
-            let pathComponent = suggestedFilename ?? data.downloadUrl?.lastPathComponent ?? "download.pkg"
-            let cf = data.consoleType
-            
-            var path: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
-            
-            path.appendPathComponent(cf!)
-//            var path: URL = Defaults[.dl_library_folder]!.appendingPathComponent(cf!)
-            path.appendPathComponent(pathComponent)
+        let fallbackName = data.downloadUrl?.lastPathComponent ?? "download.pkg"
+        let consoleFolder = data.consoleType ?? ""
+        let libraryFolder: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
 
-            let decodedurl = path.path.removingPercentEncoding
-            return URL(fileURLWithPath: decodedurl ?? path.path)
+        return { suggestedFilename in
+            // .pkg filename
+            let path = libraryFolder
+                .appendingPathComponent(consoleFolder)
+                .appendingPathComponent(suggestedFilename ?? fallbackName)
+
+            return URL(fileURLWithPath: path.path.removingPercentEncoding ?? path.path)
         }
-        return destination
     }
     
     func makeConsoleFolder(dlItem: DLItem) {
@@ -52,54 +47,63 @@ class DownloadManager {
     }
     
     func addToDownloadQueue(data: DLItem) {
-        // store request in same object so we can cancel/pause/resume it later
+        guard let url = data.downloadUrl else {
+            return
+        }
+
         let destination = getDestination(data: data)
         
         makeConsoleFolder(dlItem: data)
         
-        let request = FileDownload(url: data.downloadUrl!, destination: destination)
-        data.request = request
+        // store the download in the same object so we can stop/resume it later
+        let download = FileDownload(url: url, destination: destination)
+        data.download = download
         data.destination = destination
         data.status = "Queued..."
         data.makeStoppable()
-            
-        // add object to downloadItems array
+
         downloadItems.insert(data, at: 0)
-        
-        let downloadItemsIndex = downloadItems.firstIndex(of: data)!
-        
-        // get object back out of downloadItems array so the async operation can use it and update the properties as it runs
-        let dlItem = self.downloadItems[downloadItemsIndex]
-        
-        let dlFileOperation = makeConucurrentOperation(dlItem: dlItem, request: request)
-        self.queue.addOperation(dlFileOperation)
+
+        start(item: data, download: download)
     }
     
     func resumeDownload(data: DLItem) {
         let destination = data.destination ?? getDestination(data: data)
-        let request: FileDownload
+        let download: FileDownload
         if let resumeData = data.resumeData {
-            request = FileDownload(resumeData: resumeData, destination: destination)
+            download = FileDownload(resumeData: resumeData, destination: destination)
         } else if let url = data.downloadUrl {
-            request = FileDownload(url: url, destination: destination)
+            download = FileDownload(url: url, destination: destination)
         } else {
             return
         }
-        data.request = request
-        let op = makeConucurrentOperation(dlItem: data, request: request)
-        queue.addOperation(op)
+
+        data.download = download
+        data.resumeData = nil
+        start(item: data, download: download)
+    }
+
+    func stopDownload(item: DLItem) {
+        item.status = "Stopped"
+        item.makeResumable()
+
+        guard let download = item.download else {
+            return
+        }
+        Task {
+            item.resumeData = await download.stop()
+        }
     }
 
     func removeCompleted() {
-        for item in downloadItems {
-            if (item.isRemovable) {
-                downloadItems.remove(at: downloadItems.firstIndex(of: item)!)
-            }
-        }
+        downloadItems.removeAll { $0.isRemovable }
     }
     
     func moveToCompleted(item: DLItem) {
-        downloadItems.remove(at: downloadItems.firstIndex(of: item)!)
+        guard let index = downloadItems.firstIndex(of: item) else {
+            return
+        }
+        downloadItems.remove(at: index)
         downloadItems.insert(item, at: downloadItems.endIndex)
     }
     
@@ -113,7 +117,9 @@ class DownloadManager {
             if (item.status == "Download Complete" || item.status == "Extraction Complete" || item.status == "Missing zRIF, license not created") {
                 item.makeViewable()
             } else {
-                item.request?.cancel()
+                if let download = item.download {
+                    Task { _ = await download.stop() }
+                }
                 item.status = "Stopped"
                 item.makeResumable()
             }
@@ -147,75 +153,114 @@ class DownloadManager {
         }
     }
 
-    func makeConucurrentOperation(dlItem: DLItem, request: FileDownload) -> ConcurrentOperation {
-        return ConcurrentOperation { operation in
-            request.onProgress = { fraction in
-                dlItem.status = "Downloading..."
-                dlItem.makeStoppable()
-                dlItem.progress = (fraction * 100).rounded()
-                dlItem.timeRemaining = fraction
-            }
-            request.onFinish = { result in
-                // Frees the queue slot at once, so the next download starts while this file is verified.
-                operation.finish()
+    private func start(item: DLItem, download: FileDownload) {
+        Task {
+            await slots.acquire()
 
-                switch result {
-                case .success(let fileURL):
-                    dlItem.destinationURL = fileURL
-                    self.verifyChecksum(of: dlItem) {
-                        if (dlItem.isMore()) {
-                            dlItem.doNext?.cpackPath = dlItem.destinationURL
-                            dlItem.status = "Waiting..."
-
-                            self.addToDownloadQueue(data: dlItem.doNext!)
-                        } else {
-                            ExtractionManager(item: dlItem, downloadManager: self).start()
-                        }
-                    }
-                case .failure(let failure):
-                    let wasCancelled = (failure.underlying as? URLError)?.code == .cancelled
-                    if wasCancelled || failure.resumeData != nil {
-                        dlItem.status = "Stopped"
-                        dlItem.resumeData = failure.resumeData
-                        dlItem.makeResumable()
-                    } else {
-                        dlItem.status = "Failed! \(failure.underlying.localizedDescription)"
-                        log.error(failure.underlying)
-
-                        dlItem.makeRemovable()
-                    }
+            let fileURL: URL
+            do {
+                fileURL = try await download.run { fraction in
+                    item.status = "Downloading..."
+                    item.makeStoppable()
+                    item.progress = (fraction * 100).rounded()
+                    item.timeRemaining = fraction
                 }
+            } catch {
+                await slots.release()
+                handleFailure(error, of: item)
+                return
             }
 
-            request.start()
+            // Frees the slot at once, so the next download starts while this file is verified.
+            await slots.release()
+
+            item.destinationURL = fileURL
+            await verifyChecksum(of: item)
+
+            if (item.isMore()) {
+                item.doNext?.cpackPath = item.destinationURL
+                item.status = "Waiting..."
+
+                addToDownloadQueue(data: item.doNext!)
+            } else {
+                ExtractionManager(item: item, downloadManager: self).start()
+            }
+        }
+    }
+
+    private func handleFailure(_ error: Error, of item: DLItem) {
+        guard let failure = error as? DownloadFailure else {
+            item.status = "Failed! \(error.localizedDescription)"
+            log.error(error)
+            item.makeRemovable()
+            return
+        }
+
+        if failure.isCancelled {
+            // `stopDownload` already updated the item.
+            return
+        }
+
+        if let resumeData = failure.resumeData {
+            item.status = "Stopped"
+            item.resumeData = resumeData
+            item.makeResumable()
+        } else {
+            item.status = "Failed! \(failure.underlying.localizedDescription)"
+            log.error(failure.underlying)
+
+            item.makeRemovable()
         }
     }
 
     // A wrong checksum only warns, because the TSV hashes are sometimes outdated.
-    private func verifyChecksum(of dlItem: DLItem, completion: @escaping () -> Void) {
-        guard let expected = dlItem.sha256?.lowercased(), expected.count == 64, let fileURL = dlItem.destinationURL else {
-            completion()
+    private func verifyChecksum(of item: DLItem) async {
+        guard let expected = item.sha256?.lowercased(), expected.count == 64, let fileURL = item.destinationURL else {
             return
         }
 
-        dlItem.status = "Verifying..."
+        item.status = "Verifying..."
 
-        DispatchQueue.global(qos: .utility).async {
-            let actual = DownloadManager.sha256Hex(of: fileURL)
-
-            DispatchQueue.main.async {
-                if let actual = actual, actual != expected {
-                    log.warning("Checksum mismatch for \(fileURL.lastPathComponent)")
-                    Helpers().makeAlert(messageText: "Checksum mismatch",
-                                        informativeText: "\(dlItem.name ?? fileURL.lastPathComponent) does not match the expected SHA256. The file may be damaged or the list may be outdated.",
-                                        alertStyle: .warning)
-                }
-                completion()
-            }
+        let actual = await FileChecksum.sha256(of: fileURL)
+        if let actual = actual, actual != expected {
+            log.warning("Checksum mismatch for \(fileURL.lastPathComponent)")
+            Helpers().makeAlert(messageText: "Checksum mismatch",
+                                informativeText: "\(item.name ?? fileURL.lastPathComponent) does not match the expected SHA256. The file may be damaged or the list may be outdated.",
+                                alertStyle: .warning)
         }
     }
+}
 
-    private static func sha256Hex(of fileURL: URL) -> String? {
+// Limits how many downloads run at the same time.
+actor DownloadSlots {
+    private let limit: Int
+    private var running = 0
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+
+    init(limit: Int) {
+        self.limit = max(1, limit)
+    }
+
+    func acquire() async {
+        if running < limit {
+            running += 1
+            return
+        }
+        await withCheckedContinuation { waiting.append($0) }
+    }
+
+    func release() {
+        if waiting.isEmpty {
+            running -= 1
+        } else {
+            waiting.removeFirst().resume()
+        }
+    }
+}
+
+enum FileChecksum {
+    @concurrent
+    static func sha256(of fileURL: URL) async -> String? {
         guard let handle = try? FileHandle(forReadingFrom: fileURL) else {
             return nil
         }

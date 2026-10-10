@@ -11,6 +11,7 @@ import Cocoa
 import Zip
 //import Files
 
+@MainActor
 class ExtractionManager {
     private var item: DLItem
 //    private let userSettings = SettingsManager().getSettings()

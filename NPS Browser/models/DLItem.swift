@@ -24,7 +24,7 @@ class DLItem: NSObject, Codable {
     var sha256                          : String?
     @objc dynamic var status            : String?
     @objc dynamic var timeRemaining     : TimeInterval = 0
-    var request                         : FileDownload?
+    var download                        : FileDownload?
     var resumeData                      : Data?
     var destination                     : FileDownload.Destination?
     @objc dynamic var destinationURL    : URL?

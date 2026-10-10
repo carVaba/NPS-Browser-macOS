@@ -8,18 +8,24 @@ import Foundation
 struct DownloadFailure: Error {
     let underlying: Error
     let resumeData: Data?
+
+    var isCancelled: Bool {
+        (underlying as? URLError)?.code == .cancelled
+    }
 }
 
 struct HTTPStatusError: Error {
     let statusCode: Int
 }
 
-// One download task that can be cancelled and resumed. It starts only after `start()` is called.
-final class FileDownload: NSObject, URLSessionDownloadDelegate {
-    typealias Destination = (_ suggestedFilename: String?) -> URL
+enum DownloadEvent: Sendable {
+    case progress(Double)
+    case finished(URL)
+}
 
-    var onProgress: ((Double) -> Void)?
-    var onFinish: ((Result<URL, DownloadFailure>) -> Void)?
+// One file download. It starts when `run` is called and can be stopped with `stop`.
+actor FileDownload {
+    typealias Destination = @Sendable (_ suggestedFilename: String?) -> URL
 
     private enum Source {
         case url(URL)
@@ -29,9 +35,7 @@ final class FileDownload: NSObject, URLSessionDownloadDelegate {
     private let source: Source
     private let destination: Destination
     private var task: URLSessionDownloadTask?
-    private var isCancelledBeforeStart = false
-    private var movedURL: URL?
-    private var failure: Error?
+    private var isStopped = false
 
     init(url: URL, destination: @escaping Destination) {
         self.source = .url(url)
@@ -43,41 +47,68 @@ final class FileDownload: NSObject, URLSessionDownloadDelegate {
         self.destination = destination
     }
 
-    func start() {
-        guard task == nil else { return }
-
-        if isCancelledBeforeStart {
-            onFinish?(.failure(DownloadFailure(underlying: URLError(.cancelled), resumeData: nil)))
-            return
+    func run(onProgress: @MainActor @Sendable (Double) -> Void = { _ in }) async throws -> URL {
+        guard !isStopped else {
+            throw DownloadFailure(underlying: URLError(.cancelled), resumeData: nil)
         }
 
-        let session = URLSession(configuration: .default, delegate: self, delegateQueue: .main)
+        for try await event in makeEvents() {
+            switch event {
+            case .progress(let fraction):
+                await onProgress(fraction)
+            case .finished(let fileURL):
+                return fileURL
+            }
+        }
+        throw DownloadFailure(underlying: URLError(.cancelled), resumeData: nil)
+    }
+
+    // Returns the data that `FileDownload(resumeData:destination:)` needs to continue the file later.
+    func stop() async -> Data? {
+        isStopped = true
+        return await task?.cancelByProducingResumeData()
+    }
+
+    private func makeEvents() -> AsyncThrowingStream<DownloadEvent, Error> {
+        var continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation!
+        let events = AsyncThrowingStream<DownloadEvent, Error> { continuation = $0 }
+
+        let session = URLSession(configuration: .default,
+                                 delegate: DownloadDelegate(destination: destination, continuation: continuation),
+                                 delegateQueue: nil)
+        let downloadTask: URLSessionDownloadTask
         switch source {
         case .url(let url):
-            task = session.downloadTask(with: url)
+            downloadTask = session.downloadTask(with: url)
         case .resumeData(let data):
-            task = session.downloadTask(withResumeData: data)
+            downloadTask = session.downloadTask(withResumeData: data)
         }
-        task?.resume()
-        // Lets the session release this delegate when the task ends.
+        task = downloadTask
+
+        continuation.onTermination = { _ in downloadTask.cancel() }
+        downloadTask.resume()
+        // Lets the session release its delegate when the task ends.
         session.finishTasksAndInvalidate()
-    }
 
-    func cancel() {
-        guard let task = task else {
-            isCancelledBeforeStart = true
-            return
-        }
-        // The resume data arrives in the error of `urlSession(_:task:didCompleteWithError:)`.
-        task.cancel(byProducingResumeData: { _ in })
+        return events
     }
+}
 
-    // MARK: URLSessionDownloadDelegate
+private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
+    private let destination: FileDownload.Destination
+    private let continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation
+    private var movedURL: URL?
+    private var failure: Error?
+
+    init(destination: @escaping FileDownload.Destination, continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation) {
+        self.destination = destination
+        self.continuation = continuation
+    }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,
                     totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         guard totalBytesExpectedToWrite > 0 else { return }
-        onProgress?(Double(totalBytesWritten) / Double(totalBytesExpectedToWrite))
+        continuation.yield(.progress(Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)))
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
@@ -104,44 +135,62 @@ final class FileDownload: NSObject, URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
             let resumeData = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data
-            onFinish?(.failure(DownloadFailure(underlying: error, resumeData: resumeData)))
+            continuation.finish(throwing: DownloadFailure(underlying: error, resumeData: resumeData))
         } else if let failure = failure {
-            onFinish?(.failure(DownloadFailure(underlying: failure, resumeData: nil)))
+            continuation.finish(throwing: DownloadFailure(underlying: failure, resumeData: nil))
         } else if let movedURL = movedURL {
-            onFinish?(.success(movedURL))
+            continuation.yield(.finished(movedURL))
+            continuation.finish()
+        } else {
+            continuation.finish()
         }
     }
 }
 
 enum HTTPClient {
-    static func fetchData(from url: URL, progress: ((Double) -> Void)? = nil,
-                          completion: @escaping (Result<Data, Error>) -> Void) {
+    static func data(from url: URL, onProgress: @MainActor @Sendable (Double) -> Void = { _ in }) async throws -> Data {
         if url.isFileURL {
-            completion(Result { try Data(contentsOf: url) })
-            return
+            return try Data(contentsOf: url)
         }
 
         let temporaryFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let download = FileDownload(url: url) { _ in temporaryFile }
-        download.onProgress = progress
-        download.onFinish = { result in
-            switch result {
-            case .success(let file):
-                defer { try? FileManager.default.removeItem(at: file) }
-                completion(Result { try Data(contentsOf: file) })
-            case .failure(let failure):
-                completion(.failure(failure.underlying))
+        defer { try? FileManager.default.removeItem(at: temporaryFile) }
+
+        do {
+            let file = try await FileDownload(url: url) { _ in temporaryFile }.run(onProgress: onProgress)
+            return try Data(contentsOf: file)
+        } catch let failure as DownloadFailure {
+            throw failure.underlying
+        }
+    }
+
+    static func string(from url: URL, onProgress: @MainActor @Sendable (Double) -> Void = { _ in }) async throws -> String {
+        let data = try await data(from: url, onProgress: onProgress)
+        return String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
+    }
+}
+
+// Temporary wrappers for the callers that still use closures.
+extension HTTPClient {
+    static func fetchData(from url: URL, progress: ((Double) -> Void)? = nil,
+                          completion: @escaping (Result<Data, Error>) -> Void) {
+        Task {
+            do {
+                completion(.success(try await data(from: url, onProgress: { progress?($0) })))
+            } catch {
+                completion(.failure(error))
             }
         }
-        download.start()
     }
 
     static func fetchString(from url: URL, progress: ((Double) -> Void)? = nil,
                             completion: @escaping (Result<String, Error>) -> Void) {
-        fetchData(from: url, progress: progress) { result in
-            completion(result.map { data in
-                String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
-            })
+        Task {
+            do {
+                completion(.success(try await string(from: url, onProgress: { progress?($0) })))
+            } catch {
+                completion(.failure(error))
+            }
         }
     }
 }

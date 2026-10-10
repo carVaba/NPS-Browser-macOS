@@ -9,6 +9,7 @@
 import Cocoa
 import Foundation
 
+@MainActor
 class Helpers {
     
     func makeAlert(messageText: String = "", informativeText: String = "", alertStyle: NSAlert.Style = .warning) {
