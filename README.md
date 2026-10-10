@@ -1,7 +1,9 @@
 # NPS Browser for macOS
 
 A Swift implementation of NPS Browser.\
-**Requires macOS 13 or later**
+**Requires macOS 13 or later. Built and tested with Xcode 27 on the latest macOS (macOS 27).**
+
+This fork is updated for current macOS. It runs natively on Apple silicon and on Intel Macs.
 
 ![](/Screenshots/main.png?raw=true)
 
@@ -13,6 +15,11 @@ A Swift implementation of NPS Browser.\
 * Compatibility pack support for FW 3.61+
 * Game updates are always the latest version
 * Game artwork is displayed
+* Downloads retry on network errors and wait for the network to return
+* A Cancel button in the download list removes a download
+* Games, updates and compatibility packs are checked with SHA256 when the list has a hash
+* An animation shows the artwork flying to the Downloads button
+* The search text stays when you change the console or the region
 
 ## Usage
 * Change or set URLs and extraction preferences in the Preferences window
@@ -27,6 +34,17 @@ rm -r ~/Library/Caches/JK3Y.NPS-Browser
 rm -r ~/Library/Caches/NPS\ Browser
 defaults delete JK3Y.NPS-Browser
 ```
+
+## Compatibility
+| Item | Version |
+|---|---|
+| macOS | 13 or later, tested on macOS 27 |
+| Xcode | 26 or later, tested with Xcode 27 |
+| Swift | 5 language mode, built with the Swift 6 toolchain |
+| Architectures | arm64 and x86_64 (universal) |
+| Dependencies | Swift Package Manager (no Carthage) |
+
+The bundled `pkg2zip` and `vitaupdatelinks` tools are universal binaries.
 
 ## Building
 Make sure you have Xcode 26 or later installed.
