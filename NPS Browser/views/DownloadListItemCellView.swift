@@ -42,6 +42,13 @@ class DownloadListItemCellView: NSTableCellView {
         }
     }
     
+    @IBAction func cancelAction(_ sender: Any) {
+        guard let item = item else {
+            return
+        }
+        Helpers().getSharedAppDelegate().downloadManager.cancelDownload(item: item)
+    }
+    
     func stopRequest() {
         Helpers().getSharedAppDelegate().downloadManager.stopDownload(item: item!)
     }

@@ -1319,9 +1319,12 @@
                                                                         <binding destination="DaP-mC-AOO" name="value" keyPath="objectValue.timeRemaining" id="mcE-zL-qPf"/>
                                                                     </connections>
                                                                 </textField>
-                                                                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fIF-ay-Bh6" userLabel="Dynamic Button">
-                                                                    <rect key="frame" x="378" y="18" width="18" height="18"/>
-                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fIF-ay-Bh6" userLabel="Dynamic Button">
+                                                                    <rect key="frame" x="356" y="19" width="18" height="18"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="18" id="cNc-dw-001"/>
+                                                                        <constraint firstAttribute="height" constant="18" id="cNc-dh-002"/>
+                                                                    </constraints>
                                                                     <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="Start" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="Zve-0S-iO5">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                         <font key="font" metaFont="system"/>
@@ -1329,6 +1332,20 @@
                                                                     <connections>
                                                                         <action selector="doAction:" target="DaP-mC-AOO" id="0vG-pV-oMm"/>
                                                                         <binding destination="DaP-mC-AOO" name="image" keyPath="objectValue.actionImage" id="C2Q-LK-hoo"/>
+                                                                    </connections>
+                                                                </button>
+                                                                <button toolTip="Cancel and remove this download" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cNc-bn-003" userLabel="Cancel Button">
+                                                                    <rect key="frame" x="378" y="19" width="18" height="18"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="18" id="cNc-cw-004"/>
+                                                                        <constraint firstAttribute="height" constant="18" id="cNc-ch-005"/>
+                                                                    </constraints>
+                                                                    <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSStopProgressFreestandingTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="cNc-bc-006">
+                                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <font key="font" metaFont="system"/>
+                                                                    </buttonCell>
+                                                                    <connections>
+                                                                        <action selector="cancelAction:" target="DaP-mC-AOO" id="cNc-ac-007"/>
                                                                     </connections>
                                                                 </button>
                                                                 <textField toolTip="Type of file" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="lsh-3i-7Ci" userLabel="Download Type">
@@ -1358,7 +1375,11 @@
                                                                 <constraint firstItem="lsh-3i-7Ci" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="DaP-mC-AOO" secondAttribute="leading" constant="20" symbolic="YES" id="nEg-b5-OXO"/>
                                                                 <constraint firstItem="ZIb-vo-cOa" firstAttribute="top" secondItem="jCT-TV-Qkg" secondAttribute="bottom" id="nvz-g0-pgM"/>
                                                                 <constraint firstItem="Aaa-qS-eZW" firstAttribute="baseline" secondItem="IR4-yR-f9E" secondAttribute="baseline" id="os5-R8-bwC"/>
-                                                                <constraint firstAttribute="trailing" secondItem="lsh-3i-7Ci" secondAttribute="trailing" constant="33" id="prR-1S-BjF"/>
+                                                                <constraint firstAttribute="trailing" secondItem="lsh-3i-7Ci" secondAttribute="trailing" constant="51" id="prR-1S-BjF"/>
+                                                                <constraint firstAttribute="trailing" secondItem="cNc-bn-003" secondAttribute="trailing" constant="3" id="cNc-l1-008"/>
+                                                                <constraint firstItem="cNc-bn-003" firstAttribute="centerY" secondItem="DaP-mC-AOO" secondAttribute="centerY" id="cNc-l2-009"/>
+                                                                <constraint firstItem="cNc-bn-003" firstAttribute="leading" secondItem="fIF-ay-Bh6" secondAttribute="trailing" constant="4" id="cNc-l3-010"/>
+                                                                <constraint firstItem="fIF-ay-Bh6" firstAttribute="centerY" secondItem="DaP-mC-AOO" secondAttribute="centerY" id="cNc-l4-011"/>
                                                                 <constraint firstItem="jCT-TV-Qkg" firstAttribute="trailing" secondItem="ZIb-vo-cOa" secondAttribute="trailing" id="w3B-yq-CXl"/>
                                                                 <constraint firstItem="IR4-yR-f9E" firstAttribute="leading" relation="lessThanOrEqual" secondItem="Aaa-qS-eZW" secondAttribute="trailing" constant="143" id="xwk-ET-ua1"/>
                                                             </constraints>
@@ -2130,6 +2151,7 @@
         <image name="Favorite Star Filled" width="512" height="512"/>
         <image name="NSBookmarksTemplate" width="17" height="18"/>
         <image name="NSRefreshTemplate" width="11" height="15"/>
+        <image name="NSStopProgressFreestandingTemplate" width="14" height="14"/>
         <image name="Remove" width="22" height="22"/>
         <image name="Start" width="22" height="25"/>
         <image name="no-image" width="525" height="421"/>

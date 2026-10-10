@@ -63,6 +63,7 @@ class DownloadManager {
         data.makeStoppable()
 
         downloadItems.insert(data, at: 0)
+        NotificationCenter.default.post(name: .downloadListChanged, object: nil)
 
         start(item: data, download: download)
     }
@@ -94,6 +95,19 @@ class DownloadManager {
         Task {
             item.resumeData = await download.stop()
         }
+    }
+
+    // Stops the download and removes it from the list. The temporary data is deleted by the system.
+    func cancelDownload(item: DLItem) {
+        item.isUserStopped = true
+        item.isCancelled = true
+
+        if let download = item.download {
+            Task { _ = await download.stop() }
+        }
+
+        downloadItems.removeAll { $0 === item }
+        NotificationCenter.default.post(name: .downloadListChanged, object: nil)
     }
 
     func removeCompleted() {
@@ -362,4 +376,8 @@ enum FileChecksum {
         }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
+}
+
+extension Notification.Name {
+    static let downloadListChanged = Notification.Name("downloadListChanged")
 }
