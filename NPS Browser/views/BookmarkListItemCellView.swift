@@ -9,7 +9,15 @@
 import Cocoa
 
 class BookmarkListItemCellView: NSTableCellView {
+    @IBOutlet weak var btnDownload: NSButton!
+    @IBOutlet weak var btnRemove: NSButton!
     var item: Bookmark?
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        btnDownload.image = NSImage.symbol("arrow.down.circle")
+        btnRemove.image = NSImage.symbol("trash")
+    }
     
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)

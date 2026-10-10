@@ -25,6 +25,53 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         loadingViewController = vc
         
         self.delegate = getDataController()
+        applyToolbarSymbols()
+    }
+
+    private static let toolbarSymbols = [
+        "C9BC1AE3-0F74-4220-AC66-B1F4FA0B5EAD": "arrow.down.circle", // Downloads
+        "EDF695BA-2023-4936-9543-EAD5EC5E465D": "book",              // Bookmarks
+        "2E5BAEB9-691D-4ED3-88EA-C48B89CD7BD9": "arrow.clockwise"    // Reload
+    ]
+
+    // The items may not exist yet when the window loads, so the symbols are also set when an item is added.
+    private func applyToolbarSymbols() {
+        for item in window?.toolbar?.items ?? [] {
+            applySymbol(to: item)
+        }
+
+        NotificationCenter.default.addObserver(forName: NSToolbar.willAddItemNotification, object: window?.toolbar, queue: .main) { [weak self] notification in
+            guard let item = notification.userInfo?["item"] as? NSToolbarItem else {
+                return
+            }
+            MainActor.assumeIsolated {
+                self?.applySymbol(to: item)
+            }
+        }
+    }
+
+    private func applySymbol(to item: NSToolbarItem) {
+        guard let name = Self.toolbarSymbols[item.itemIdentifier.rawValue] else {
+            return
+        }
+        let image = NSImage.symbol(name)
+        item.image = image
+        firstButton(in: item.view)?.image = image
+    }
+
+    private func firstButton(in view: NSView?) -> NSButton? {
+        guard let view = view else {
+            return nil
+        }
+        if let button = view as? NSButton {
+            return button
+        }
+        for subview in view.subviews {
+            if let button = firstButton(in: subview) {
+                return button
+            }
+        }
+        return nil
     }
     
     @IBAction func onTypeChanged(_ sender: Any) {

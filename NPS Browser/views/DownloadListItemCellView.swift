@@ -11,8 +11,14 @@ import Cocoa
 class DownloadListItemCellView: NSTableCellView {
 
     @IBOutlet weak var btnAction: NSButton!
+    @IBOutlet weak var btnCancel: NSButton!
     var item: DLItem?
     var dlLoc = Defaults[.dl_library_folder]
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        btnCancel.image = NSImage.symbol("xmark.circle")
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)

@@ -18,6 +18,12 @@ class DetailsViewController: NSViewController {
     
     var windowDelegate: WindowDelegate?
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        chkBookmark.image = NSImage.symbol("star")
+        chkBookmark.alternateImage = NSImage.symbol("star.fill")
+    }
+
     override var representedObject: Any? {
         didSet {
             enableBookmarkButton()
