@@ -7,7 +7,6 @@
 //
 
 import Cocoa
-import Promises
 
 class PSNStoreApi {
     var item: Item
@@ -38,17 +37,17 @@ class PSNStoreApi {
         return URL(string: psnUrl)!
     }
     
-    func getImage() -> Promise<NSImage> {
-        let url = getImageURL()
-        return Promise<NSImage> { fulfill, _ in
-            HTTPClient.fetchData(from: url) { result in
-                if case .success(let data) = result, let image = NSImage(data: data) {
-                    fulfill(image)
-                } else {
-                    log.info("No image found for \(self.item.titleId ?? "") - \(self.item.name ?? "")")
-                    fulfill(#imageLiteral(resourceName: "no-image"))
-                }
+    func getImage() async -> NSImage {
+        do {
+            let data = try await HTTPClient.data(from: getImageURL())
+            if let image = NSImage(data: data) {
+                return image
             }
+        } catch {
+            log.debug(error)
         }
+
+        log.info("No image found for \(item.titleId ?? "") - \(item.name ?? "")")
+        return #imageLiteral(resourceName: "no-image")
     }
 }

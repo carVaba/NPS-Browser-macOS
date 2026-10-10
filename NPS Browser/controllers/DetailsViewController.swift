@@ -7,7 +7,6 @@
 //
 
 import Cocoa
-import Promises
 
 class DetailsViewController: NSViewController {
     
@@ -41,9 +40,13 @@ class DetailsViewController: NSViewController {
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
             let url = NetworkManager().getUpdateXMLURLFromHMAC(titleId: getROManagedObject().titleId!)
-            let pxml = NetworkManager().fetchUpdateXML(url: url)
-            pxml().then { res in
-                self.sendDLData(url: res, fileType: .Update)
+            Task {
+                do {
+                    let updateURL = try await NetworkManager().fetchUpdateXML(url: url)
+                    self.sendDLData(url: updateURL, fileType: .Update)
+                } catch {
+                    log.error(error)
+                }
             }
         }
         if (chkDLCompatPack.state == .on && chkDLCompatPack.isEnabled && chkDLCompatPack.isHidden == false) {

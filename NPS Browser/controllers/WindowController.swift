@@ -46,7 +46,7 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
     }
     
     @IBAction func reloadDatabase(_ sender: NSMenuItem) {
-        NetworkManager().makeRequest()
+        Task { await NetworkManager().makeRequest() }
     }
 
 //    @IBAction func toggleArtworkSidebar(_ sender: NSMenuItem) {

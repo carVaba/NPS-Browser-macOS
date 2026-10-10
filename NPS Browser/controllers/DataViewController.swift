@@ -30,7 +30,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
         let reg = windowDelegate.getRegion()
 
         if (items?.isEmpty)! {
-            NetworkManager().makeRequest()
+            Task { await NetworkManager().makeRequest() }
         } else {
             setArrayControllerContent(content: items?.filter(NSPredicate(format: "consoleType == %@ AND fileType == %@ AND region == %@ AND pkgDirectLink != 'MISSING'", ct, ft, reg)))
         }
@@ -69,7 +69,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
         let objects = items!.filter(p)
         
         if objects.isEmpty {
-            NetworkManager().makeRequest()
+            Task { await NetworkManager().makeRequest() }
         }
         setArrayControllerContent(content: objects)
     }

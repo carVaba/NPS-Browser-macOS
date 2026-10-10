@@ -169,28 +169,3 @@ enum HTTPClient {
         return String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
     }
 }
-
-// Temporary wrappers for the callers that still use closures.
-extension HTTPClient {
-    static func fetchData(from url: URL, progress: ((Double) -> Void)? = nil,
-                          completion: @escaping (Result<Data, Error>) -> Void) {
-        Task {
-            do {
-                completion(.success(try await data(from: url, onProgress: { progress?($0) })))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-
-    static func fetchString(from url: URL, progress: ((Double) -> Void)? = nil,
-                            completion: @escaping (Result<String, Error>) -> Void) {
-        Task {
-            do {
-                completion(.success(try await string(from: url, onProgress: { progress?($0) })))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-}
