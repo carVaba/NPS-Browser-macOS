@@ -83,6 +83,10 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         return ItemType.parseString((tbType.selectedItem?.title)!, ItemType.getTypeFromTag(tbType.selectedItem?.tag ?? 0))
     }
     
+    func getSearchString() -> String {
+        return tbSearchBar.stringValue.trimmingCharacters(in: .whitespaces)
+    }
+    
     func getRegion() -> String {
         let tag = tbRegion.selectedItem?.tag
         switch (tag) {

@@ -8,6 +8,7 @@
 
 protocol WindowDelegate {
     func getRegion() -> String
+    func getSearchString() -> String
     
     func getItemType() -> ItemType
     

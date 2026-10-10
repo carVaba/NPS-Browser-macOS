@@ -71,7 +71,14 @@ class DataViewController: NSViewController, ToolbarDelegate {
         if objects.isEmpty {
             Task { await NetworkManager().makeRequest() }
         }
-        setArrayControllerContent(content: objects)
+
+        // The search text stays active when the console or the region changes.
+        let searchString = windowDelegate.getSearchString()
+        if searchString.isEmpty {
+            setArrayControllerContent(content: objects)
+        } else {
+            setArrayControllerContent(content: objects.filter("name contains[c] %@", searchString))
+        }
     }
     
     func filterString(itemType: ItemType, region: String, searchString: String) {
