@@ -65,7 +65,7 @@ class DownloadManager {
         // add object to downloadItems array
         downloadItems.insert(data, at: 0)
         
-        let downloadItemsIndex = downloadItems.index(of: data)!
+        let downloadItemsIndex = downloadItems.firstIndex(of: data)!
         
         // get object back out of downloadItems array so the async operation can use it and update the properties as it runs
         let dlItem = self.downloadItems[downloadItemsIndex]
@@ -84,13 +84,13 @@ class DownloadManager {
     func removeCompleted() {
         for item in downloadItems {
             if (item.isRemovable) {
-                downloadItems.remove(at: downloadItems.index(of: item)!)
+                downloadItems.remove(at: downloadItems.firstIndex(of: item)!)
             }
         }
     }
     
     func moveToCompleted(item: DLItem) {
-        downloadItems.remove(at: downloadItems.index(of: item)!)
+        downloadItems.remove(at: downloadItems.firstIndex(of: item)!)
         downloadItems.insert(item, at: downloadItems.endIndex)
     }
     

@@ -41,9 +41,9 @@ class Item: Object {
     dynamic var rap                         : String?
     dynamic var downloadRapFile             : String?
     dynamic var zrif                       : String?
-    let requiredFw = RealmOptional<Float>()
+    let requiredFw = RealmProperty<Float?>()
     dynamic var lastModificationDate    : Date?
-    let fileSize = RealmOptional<Int64>()
+    let fileSize = RealmProperty<Int64?>()
     dynamic var sha256                  : String?
     
     dynamic var pk: String = ""

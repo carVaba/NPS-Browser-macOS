@@ -41,7 +41,7 @@ class Helpers {
     }
     
     func showLoadingViewController() {
-        getDataController().presentViewControllerAsSheet(getWindowDelegate().getLoadingViewController())
+        getDataController().presentAsSheet(getWindowDelegate().getLoadingViewController())
     }
     
     func getRowObjectFromTableRowButton(_ sender: NSButton) -> Any? {
