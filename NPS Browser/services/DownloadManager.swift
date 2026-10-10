@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import CryptoKit
 import Queuer
 import Promises
 //import Files
@@ -155,19 +156,21 @@ class DownloadManager {
                 dlItem.timeRemaining = fraction
             }
             request.onFinish = { result in
-                // Frees the queue slot at once, so the next download can start.
+                // Frees the queue slot at once, so the next download starts while this file is verified.
                 operation.finish()
 
                 switch result {
                 case .success(let fileURL):
                     dlItem.destinationURL = fileURL
-                    if (dlItem.isMore()) {
-                        dlItem.doNext?.cpackPath = dlItem.destinationURL
-                        dlItem.status = "Waiting..."
+                    self.verifyChecksum(of: dlItem) {
+                        if (dlItem.isMore()) {
+                            dlItem.doNext?.cpackPath = dlItem.destinationURL
+                            dlItem.status = "Waiting..."
 
-                        self.addToDownloadQueue(data: dlItem.doNext!)
-                    } else {
-                        ExtractionManager(item: dlItem, downloadManager: self).start()
+                            self.addToDownloadQueue(data: dlItem.doNext!)
+                        } else {
+                            ExtractionManager(item: dlItem, downloadManager: self).start()
+                        }
                     }
                 case .failure(let failure):
                     let wasCancelled = (failure.underlying as? URLError)?.code == .cancelled
@@ -186,5 +189,42 @@ class DownloadManager {
 
             request.start()
         }
+    }
+
+    // A wrong checksum only warns, because the TSV hashes are sometimes outdated.
+    private func verifyChecksum(of dlItem: DLItem, completion: @escaping () -> Void) {
+        guard let expected = dlItem.sha256?.lowercased(), expected.count == 64, let fileURL = dlItem.destinationURL else {
+            completion()
+            return
+        }
+
+        dlItem.status = "Verifying..."
+
+        DispatchQueue.global(qos: .utility).async {
+            let actual = DownloadManager.sha256Hex(of: fileURL)
+
+            DispatchQueue.main.async {
+                if let actual = actual, actual != expected {
+                    log.warning("Checksum mismatch for \(fileURL.lastPathComponent)")
+                    Helpers().makeAlert(messageText: "Checksum mismatch",
+                                        informativeText: "\(dlItem.name ?? fileURL.lastPathComponent) does not match the expected SHA256. The file may be damaged or the list may be outdated.",
+                                        alertStyle: .warning)
+                }
+                completion()
+            }
+        }
+    }
+
+    private static func sha256Hex(of fileURL: URL) -> String? {
+        guard let handle = try? FileHandle(forReadingFrom: fileURL) else {
+            return nil
+        }
+        defer { try? handle.close() }
+
+        var hasher = SHA256()
+        while let chunk = try? handle.read(upToCount: 4 * 1024 * 1024), !chunk.isEmpty {
+            hasher.update(data: chunk)
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }
