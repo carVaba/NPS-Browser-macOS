@@ -15,10 +15,12 @@ class ExtractionManager {
     private var item: DownloadItem
 //    private let userSettings = SettingsManager().getSettings()
     private var downloadManager: DownloadManager
+    private let notifications: NotificationSending
     private var isPS3: Bool = false
-    
-    init(item: DownloadItem, downloadManager: DownloadManager) {
+
+    init(item: DownloadItem, downloadManager: DownloadManager, notifications: NotificationSending) {
         self.item = item
+        self.notifications = notifications
         Zip.addCustomFileExtension("ppk")
 
         if (item.consoleType == "PS3") {
@@ -69,7 +71,7 @@ class ExtractionManager {
                     try await Self.unzip(item.cpackPath!, to: filepath!)
                     item.parentItem?.status = "Extraction Complete"
                     item.parentItem?.makeViewable()
-                    Helpers().showNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
+                    notifications.showNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
                 }
                 try await Self.unzip(item.destinationURL!, to: filepath!)
                 completeDownload(status: "Extraction Complete")
@@ -101,7 +103,7 @@ class ExtractionManager {
             if (status == 0) {
                 setStatus("Extraction Complete")
                 item.makeViewable()
-                Helpers().showNotification(title: item.name ?? "", subtitle: item.status ?? "")
+                notifications.showNotification(title: item.name ?? "", subtitle: item.status ?? "")
                 cleanup()
             } else {
                 log.error("pkg2zip stopped with status \(status)")
@@ -123,7 +125,7 @@ class ExtractionManager {
     private func completeDownload(status: String) {
         setStatus(status)
         self.item.makeViewable()
-        Helpers().showNotification(title: self.item.name!, subtitle: self.item.status!)
+        notifications.showNotification(title: self.item.name!, subtitle: self.item.status!)
         
         downloadManager.moveToCompleted(self.item)
         return
@@ -183,7 +185,7 @@ class ExtractionManager {
 //            DispatchQueue.main.async {
 //                self.setStatus("Extraction Complete")
 //                self.item.makeViewable()
-//                Helpers().showNotification(title: self.item.name!, subtitle: self.item.status!)
+//                notifications.showNotification(title: self.item.name!, subtitle: self.item.status!)
 //            }
 //        }
 //

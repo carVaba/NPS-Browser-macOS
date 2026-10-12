@@ -13,6 +13,7 @@ class BookmarkListItemCellView: NSTableCellView {
     private let btnRemove = NSButton()
     var item: Bookmark?
     var onRemove: ((Bookmark) -> Void)?
+    var onDownload: ((Bookmark, NSButton) -> Void)?
 
     init(identifier: NSUserInterfaceItemIdentifier) {
         super.init(frame: .zero)
@@ -60,20 +61,9 @@ class BookmarkListItemCellView: NSTableCellView {
     }
 
     @objc func btnDownloadClicked(_ sender: NSButton) {
-        DownloadFlyAnimation.run(image: sender.image, from: sender)
-
-        // TODO: Add all 3 download types to DL list
-
-        let downloadItem              = DownloadItem()
-        downloadItem.fileType         = self.item?.fileType
-        downloadItem.consoleType      = self.item?.consoleType
-        downloadItem.titleId         = self.item?.titleId
-        downloadItem.name             = self.item?.name
-        downloadItem.downloadURL    = URL(string: (self.item?.downloadUrl)!)
-        downloadItem.zrif             = self.item?.zrif
-
-
-        Helpers().sharedAppDelegate.downloadManager.enqueue(downloadItem)
+        if let item = item {
+            onDownload?(item, sender)
+        }
     }
 
     @objc func btnRemoveClicked(_ sender: NSButton) {

@@ -19,7 +19,20 @@ class DetailsViewController: NSViewController {
     private let regionLabel = NSTextField.makeLabel()
     private let requiredFWLabel = NSTextField.makeLabel()
 
-    var windowDelegate: WindowDelegate?
+    private let downloads: DownloadQueuing
+    private let animationTarget: DownloadsButtonProviding
+    private let updates: UpdateLinkFetching
+
+    init(downloads: DownloadQueuing, animationTarget: DownloadsButtonProviding, updates: UpdateLinkFetching) {
+        self.downloads = downloads
+        self.animationTarget = animationTarget
+        self.updates = updates
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("DetailsViewController is created in code.")
+    }
 
     private static let firmwareFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -147,7 +160,7 @@ class DetailsViewController: NSViewController {
         let obj = selectedItem
 
         let artwork = boxartViewController
-        DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart)
+        DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart, to: animationTarget)
 
         var baseDownloadItem: DownloadItem? = nil
 
@@ -157,10 +170,10 @@ class DetailsViewController: NSViewController {
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
-            let url = NetworkManager().updateXMLURL(forTitleID: selectedItem.titleId!)
+            let url = updates.updateXMLURL(forTitleID: selectedItem.titleId!)
             Task {
                 do {
-                    let updateURL = try await NetworkManager().fetchUpdateXML(url: url)
+                    let updateURL = try await self.updates.fetchUpdateXML(url: url)
                     self.sendDLData(url: updateURL, fileType: .update)
                 } catch {
                     log.error(error)
@@ -191,7 +204,7 @@ class DetailsViewController: NSViewController {
                         item.parentItem = baseDownloadItem
                     }
                     
-                    Helpers().sharedAppDelegate.downloadManager.enqueue(baseDownloadItem!)
+                    downloads.enqueue(baseDownloadItem!)
                 default: break
                 }
             default: break
@@ -287,7 +300,7 @@ class DetailsViewController: NSViewController {
     func sendDLData(url: URL, fileType: FileType) {
         let obj = selectedItem
         let downloadItem = DownloadItem(item: obj, downloadURL: url, fileType: fileType)
-        Helpers().sharedAppDelegate.downloadManager.enqueue(downloadItem)
+        downloads.enqueue(downloadItem)
     }
     
     var selectedItem: Item {

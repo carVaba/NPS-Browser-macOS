@@ -9,15 +9,38 @@
 import Foundation
 
 @MainActor
-class NetworkManager {
-    
-    let windowDelegate: WindowDelegate = Helpers().windowDelegate
-    
-    let itemType = Helpers().windowDelegate.itemType
+protocol ListLoading {
+    func makeRequest() async
+}
+
+@MainActor
+protocol UpdateLinkFetching {
+    func updateXMLURL(forTitleID titleID: String) -> String
+    func fetchUpdateXML(url: String) async throws -> URL
+}
+
+@MainActor
+class NetworkManager: ListLoading, UpdateLinkFetching {
+
+    private let selection: ItemSelecting
+    private let loading: LoadingPresenting
+    private let alerts: AlertPresenting
+    private let sources: SourceURLProviding
+
+    init(selection: ItemSelecting, loading: LoadingPresenting, alerts: AlertPresenting, sources: SourceURLProviding) {
+        self.selection = selection
+        self.loading = loading
+        self.alerts = alerts
+        self.sources = sources
+    }
+
+    private var itemType: ItemType {
+        return selection.itemType
+    }
 
     func makeRequest() async {
-        guard let url = Helpers().sourceURL(for: itemType) else {
-            Helpers().showAlert(messageText: "No URL set for \(self.itemType.console.rawValue) \(self.itemType.fileType.rawValue)s.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+        guard let url = sources.sourceURL(for: itemType) else {
+            alerts.showAlert(messageText: "No URL set for \(self.itemType.console.rawValue) \(self.itemType.fileType.rawValue)s.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for item type: \(itemType.description)")
             return
@@ -25,44 +48,44 @@ class NetworkManager {
         
         if (url.isFileURL) {
             guard (try? url.checkResourceIsReachable()) != nil else {
-                Helpers().showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(url)", alertStyle: .warning)
+                alerts.showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(url)", alertStyle: .warning)
                 return
             }
         }
 
         let storage = try! RealmStorageContext()
-        let ft:FileType = self.windowDelegate.itemType.fileType
-        let ct:ConsoleType = self.windowDelegate.itemType.console
+        let ft:FileType = selection.itemType.fileType
+        let ct:ConsoleType = selection.itemType.console
         
-        Helpers().showLoadingViewController()
-        Helpers().loadingViewController.setLabel(text: "Requesting data... (step 1/5)")
-        Helpers().loadingViewController.setProgress(amount: 20)
+        loading.show()
+        loading.setLabel(text: "Requesting data... (step 1/5)")
+        loading.setProgress(amount: 20)
 
         do {
             let text = try await HTTPClient.string(from: url) { fraction in
-                self.windowDelegate.loadingViewController.setLabel(text: "Receiving data... (step 2/5)")
-                self.windowDelegate.loadingViewController.setProgress(amount: fraction / 20)
+                loading.setLabel(text: "Receiving data... (step 2/5)")
+                loading.setProgress(amount: fraction / 20)
             }
 
-            self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
-            self.windowDelegate.loadingViewController.setProgress(amount: 20)
+            loading.setLabel(text: "Preparing... (step 3/5)")
+            loading.setProgress(amount: 20)
             let parsedTSV = Parser().parseTSV(text, itemType: self.itemType)
 
-            self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
-            self.windowDelegate.loadingViewController.setProgress(amount: 50)
+            loading.setLabel(text: "Removing old values... (step 4/5)")
+            loading.setProgress(amount: 50)
             try storage.deleteAll(Item.self, predicate: NSPredicate(format: "fileType == %@ AND consoleType == %@", ft.rawValue, ct.rawValue))
 
-            self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
-            self.windowDelegate.loadingViewController.setProgress(amount: 20)
+            loading.setLabel(text: "Storing new values... (step 5/5)")
+            loading.setProgress(amount: 20)
             DBManager().store(contentsOf: parsedTSV.map { Item(tsvData: $0) })
         } catch {
             log.error(error)
-            Helpers().loadingViewController.closeWindow()
-            Helpers().showAlert(messageText: "Could not load the list.", informativeText: error.localizedDescription, alertStyle: .warning)
+            loading.close()
+            alerts.showAlert(messageText: "Could not load the list.", informativeText: error.localizedDescription, alertStyle: .warning)
             return
         }
 
-        Helpers().loadingViewController.closeWindow()
+        loading.close()
 
         if (self.itemType.console == ConsoleType.psv && self.itemType.fileType == FileType.game) {
             Task {
@@ -70,19 +93,18 @@ class NetworkManager {
             }
         }
 
-        Helpers().dataController.filterType(itemType: ItemType(console: ct, fileType: ft), region: self.windowDelegate.region)
     }
 
     private func loadCompatPacks() async {
         guard let cpackurl = Defaults[.sourceCompatPacks] else {
-            Helpers().showAlert(messageText: "No URL set for Compat Packs.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+            alerts.showAlert(messageText: "No URL set for Compat Packs.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat packs.")
             return
         }
 
         guard let cpatchurl: URL = Defaults[.sourceCompatPatch] else {
-            Helpers().showAlert(messageText: "No URL set for Compat Patches.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+            alerts.showAlert(messageText: "No URL set for Compat Patches.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat patches")
             return
@@ -90,7 +112,7 @@ class NetworkManager {
 
         if (cpatchurl.isFileURL) {
             guard (try? cpatchurl.checkResourceIsReachable()) != nil else {
-                Helpers().showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(cpatchurl)", alertStyle: .warning)
+                alerts.showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(cpatchurl)", alertStyle: .warning)
                 return
             }
         }
@@ -112,30 +134,30 @@ class NetworkManager {
         
         let typeName: String = isPatch ? "CompatPatch" : "CompatPack"
 
-        if (self.windowDelegate.loadingViewController.presentingViewController != nil) {
-            Helpers().showLoadingViewController()
+        if (loading.isShowing) {
+            loading.show()
         }
-        Helpers().loadingViewController.setLabel(text: "Requesting Comp Packs... (step 1/5)")
-        Helpers().loadingViewController.setProgress(amount: 20)
+        loading.setLabel(text: "Requesting Comp Packs... (step 1/5)")
+        loading.setProgress(amount: 20)
 
         let text = try await HTTPClient.string(from: url) { fraction in
-            self.windowDelegate.loadingViewController.setLabel(text: "Receiving data... (step 2/5)")
-            self.windowDelegate.loadingViewController.setProgress(amount: fraction / 20)
+            loading.setLabel(text: "Receiving data... (step 2/5)")
+            loading.setProgress(amount: fraction / 20)
         }
 
-        self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
-        self.windowDelegate.loadingViewController.setProgress(amount: 20)
+        loading.setLabel(text: "Preparing... (step 3/5)")
+        loading.setProgress(amount: 20)
         let parsed = Parser().parseCompatPackEntries(text, isPatch: isPatch, typeName: typeName)
 
-        self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
-        self.windowDelegate.loadingViewController.setProgress(amount: 50)
+        loading.setLabel(text: "Removing old values... (step 4/5)")
+        loading.setProgress(amount: 50)
         try storage.deleteAll(CompatPack.self, predicate: NSPredicate(format: "type == %@", typeName))
 
-        self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
-        self.windowDelegate.loadingViewController.setProgress(amount: 20)
+        loading.setLabel(text: "Storing new values... (step 5/5)")
+        loading.setProgress(amount: 20)
         DBManager().store(contentsOf: parsed)
 
-        Helpers().loadingViewController.closeWindow()
+        loading.close()
     }
 
     func updateXMLURL(forTitleID titleID: String) -> String {

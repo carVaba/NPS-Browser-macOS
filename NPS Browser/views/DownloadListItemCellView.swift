@@ -23,9 +23,11 @@ class DownloadListItemCellView: NSTableCellView {
     private let detailsLabel = NSTextField.makeLabel(font: .messageFont(ofSize: 11))
     private let typeLabel = NSTextField.makeLabel(font: .messageFont(ofSize: 11))
     private var observations: [NSKeyValueObservation] = []
+    private let downloads: DownloadQueuing
     var item: DownloadItem?
 
-    init(identifier: NSUserInterfaceItemIdentifier) {
+    init(identifier: NSUserInterfaceItemIdentifier, downloads: DownloadQueuing) {
+        self.downloads = downloads
         super.init(frame: .zero)
         self.identifier = identifier
 
@@ -149,11 +151,11 @@ class DownloadListItemCellView: NSTableCellView {
         guard let item = item else {
             return
         }
-        Helpers().sharedAppDelegate.downloadManager.cancel(item)
+        downloads.cancel(item)
     }
 
     func stopRequest() {
-        Helpers().sharedAppDelegate.downloadManager.stop(item!)
+        downloads.stop(item!)
     }
     
     func viewFile() {
@@ -194,7 +196,7 @@ class DownloadListItemCellView: NSTableCellView {
     
     func resumeRequest() {
         item!.status = "Resuming..."
-        Helpers().sharedAppDelegate.downloadManager.resume(item!)
+        downloads.resume(item!)
         
         item?.makeStoppable()
     }

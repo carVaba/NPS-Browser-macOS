@@ -7,26 +7,25 @@
 //
 
 import Cocoa
-import RealmSwift
 
-private extension NSToolbarItem.Identifier {
-    static let type = NSToolbarItem.Identifier("type")
-    static let region = NSToolbarItem.Identifier("region")
-    static let search = NSToolbarItem.Identifier("search")
-    static let downloads = NSToolbarItem.Identifier("downloads")
-    static let bookmarks = NSToolbarItem.Identifier("bookmarks")
-}
-
-class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
-    private let tbType = NSPopUpButton(frame: .zero, pullsDown: false)
-    private let tbRegion = NSPopUpButton(frame: .zero, pullsDown: false)
-    private let tbSearchBar = NSSearchField()
-    var delegate: ToolbarDelegate?
-    private let loadingSheet = LoadingViewController()
+// Builds the main window and connects the screens with the services they use.
+class WindowController: NSWindowController {
+    private let toolbar: MainToolbar
+    private let downloads: DownloadQueuing
+    private let dataViewController: DataViewController
     private var popover: NSPopover?
-    private(set) var downloadsButton: NSView?
 
-    init() {
+    init(downloads: DownloadQueuing, alerts: AlertPresenting, sources: SourceURLProviding) {
+        let toolbar = MainToolbar()
+        let loading = LoadingSheetPresenter()
+        let network = NetworkManager(selection: toolbar, loading: loading, alerts: alerts, sources: sources)
+
+        let data = DataViewController(selection: toolbar, loader: network)
+        loading.host = data
+        toolbar.delegate = data
+
+        let details = DetailsViewController(downloads: downloads, animationTarget: toolbar, updates: network)
+
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 960, height: 520),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
                               backing: .buffered, defer: false)
@@ -35,22 +34,28 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isReleasedWhenClosed = false
-        window.contentViewController = Self.makeSplitViewController()
+        window.contentViewController = Self.makeSplitViewController(data: data, details: details)
         window.setContentSize(NSSize(width: 960, height: 520))
         window.center()
         window.setFrameAutosaveName("NPS Browser")
+        window.toolbar = toolbar.toolbar
 
+        self.toolbar = toolbar
+        self.downloads = downloads
+        self.dataViewController = data
         super.init(window: window)
 
-        configurePopUps()
-        configureSearchBar()
-        let toolbar = NSToolbar(identifier: "MainToolbar")
-        toolbar.delegate = self
-        toolbar.displayMode = .iconOnly
-        toolbar.allowsUserCustomization = false
-        window.toolbar = toolbar
-
-        delegate = dataController
+        toolbar.onShowDownloads = { [weak self] button in
+            guard let self = self else { return }
+            self.showPopover(DownloadViewController(downloads: self.downloads), from: button)
+        }
+        toolbar.onShowBookmarks = { [weak self] button in
+            guard let self = self else { return }
+            let bookmarks = BookmarksViewController(downloads: self.downloads, animationTarget: self.toolbar) { [weak self] uuid in
+                self?.dataViewController.detailsViewController.toggleBookmark(comparePK: uuid)
+            }
+            self.showPopover(bookmarks, from: button)
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -59,8 +64,8 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
 
     // MARK: - Layout
 
-    private static func makeSplitViewController() -> NSSplitViewController {
-        let details = NSSplitViewItem(viewController: DetailsViewController())
+    private static func makeSplitViewController(data: DataViewController, details detailsController: DetailsViewController) -> NSSplitViewController {
+        let details = NSSplitViewItem(viewController: detailsController)
         // The details have a fixed height, so the artwork pane takes the rest and does not depend on the image.
         details.minimumThickness = 270
         details.maximumThickness = 270
@@ -75,7 +80,7 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         sidebar.addSplitViewItem(details)
         sidebar.addSplitViewItem(artwork)
 
-        let list = NSSplitViewItem(contentListWithViewController: DataViewController())
+        let list = NSSplitViewItem(contentListWithViewController: data)
         list.minimumThickness = 320
         list.holdingPriority = NSLayoutConstraint.Priority(255)
         let side = NSSplitViewItem(viewController: sidebar)
@@ -92,101 +97,6 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         return main
     }
 
-    private func configurePopUps() {
-        let regions: [(String, Int)] = [("US", 0), ("EU", 1), ("JP", 2), ("ASIA", 3)]
-        for (title, tag) in regions {
-            tbRegion.addItem(withTitle: title.localized)
-            tbRegion.lastItem?.tag = tag
-        }
-
-        let types: [(String, Int)?] = [
-            ("PSV Games", 0), ("PSV DLCs", 1), ("PSV Themes", 2), nil,
-            ("PS3 Games", 0), ("PS3 DLCs", 1), ("PS3 Themes", 2), ("PS3 Avatars", 4), nil,
-            ("PSP Games", 0), ("PSX Games", 0)
-        ]
-        for entry in types {
-            guard let (title, tag) = entry else {
-                tbType.menu?.addItem(.separator())
-                continue
-            }
-            tbType.addItem(withTitle: title.localized)
-            tbType.lastItem?.tag = tag
-        }
-
-        for popUp in [tbType, tbRegion] {
-            popUp.bezelStyle = .texturedRounded
-            popUp.target = self
-        }
-        tbType.action = #selector(onTypeChanged(_:))
-        tbRegion.action = #selector(onRegionChanged(_:))
-    }
-
-    private func configureSearchBar() {
-        tbSearchBar.placeholderString = "Search".localized
-        tbSearchBar.target = self
-        tbSearchBar.action = #selector(onFilterSearchBar(_:))
-    }
-
-    // MARK: - NSToolbarDelegate
-
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.type, .region, .space, .search, .space, .flexibleSpace, .downloads, .bookmarks]
-    }
-
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.type, .region, .search, .downloads, .bookmarks, .space, .flexibleSpace]
-    }
-
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
-                 willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        switch itemIdentifier {
-        case .type:
-            return makeItem(.type, label: "Type", view: tbType)
-        case .region:
-            return makeItem(.region, label: "Region", view: tbRegion)
-        case .search:
-            let item = NSSearchToolbarItem(itemIdentifier: .search)
-            item.label = "Search".localized
-            item.paletteLabel = item.label
-            item.searchField = tbSearchBar
-            return item
-        case .downloads:
-            let button = makeButton(symbol: "arrow.down.circle", action: #selector(showDownloads(_:)))
-            downloadsButton = button
-            return makeItem(.downloads, label: "Downloads", view: button)
-        case .bookmarks:
-            let button = makeButton(symbol: "book", action: #selector(showBookmarks(_:)))
-            return makeItem(.bookmarks, label: "Bookmarks", view: button)
-        default:
-            return nil
-        }
-    }
-
-    private func makeItem(_ identifier: NSToolbarItem.Identifier, label: String, view: NSView) -> NSToolbarItem {
-        let item = NSToolbarItem(itemIdentifier: identifier)
-        item.label = label.localized
-        item.paletteLabel = item.label
-        item.view = view
-        return item
-    }
-
-    private func makeButton(symbol: String, action: Selector) -> NSButton {
-        let button = NSButton(image: NSImage.symbol(symbol), target: self, action: action)
-        button.bezelStyle = .texturedRounded
-        button.imagePosition = .imageOnly
-        return button
-    }
-
-    // MARK: - Actions
-
-    @objc private func showDownloads(_ sender: NSButton) {
-        showPopover(DownloadViewController(), from: sender)
-    }
-
-    @objc private func showBookmarks(_ sender: NSButton) {
-        showPopover(BookmarksViewController(), from: sender)
-    }
-
     private func showPopover(_ controller: NSViewController, from button: NSButton) {
         popover?.close()
         let popover = NSPopover()
@@ -196,53 +106,7 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
         self.popover = popover
     }
 
-    @objc private func onTypeChanged(_ sender: Any) {
-        delegate?.filterType(itemType: itemType, region: region)
-    }
-
-    @objc private func onRegionChanged(_ sender: Any) {
-        delegate?.filterType(itemType: itemType, region: region)
-    }
-
-    @objc private func onFilterSearchBar(_ sender: NSSearchField) {
-        let searchString = tbSearchBar.stringValue
-
-        if (!searchString.isEmpty) {
-            delegate?.filterString(itemType: itemType, region: region, searchString: searchString)
-        } else {
-            delegate?.filterType(itemType: itemType, region: region)
-        }
-    }
-
     @objc func reloadDatabase(_ sender: Any?) {
-        Task { await NetworkManager().makeRequest() }
-    }
-
-    // MARK: - WindowDelegate
-
-    var dataController: DataViewController {
-        let splitViewController = window!.contentViewController as! NSSplitViewController
-        return splitViewController.splitViewItems[0].viewController as! DataViewController
-    }
-
-    var loadingViewController: LoadingViewController {
-        return loadingSheet
-    }
-
-    var itemType: ItemType {
-        return ItemType(menuTitle: tbType.selectedItem?.title ?? "", fileType: FileType(tag: tbType.selectedItem?.tag ?? 0))
-    }
-
-    var searchString: String {
-        return tbSearchBar.stringValue.trimmingCharacters(in: .whitespaces)
-    }
-
-    var region: String {
-        switch tbRegion.selectedItem?.tag {
-        case 1: return "EU"
-        case 2: return "JP"
-        case 3: return "ASIA"
-        default: return "US"
-        }
+        dataViewController.requestData()
     }
 }

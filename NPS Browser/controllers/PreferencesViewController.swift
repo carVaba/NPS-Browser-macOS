@@ -41,6 +41,16 @@ class PreferencesViewController: NSViewController {
 
     var dlLocation: URL?
     var update_checked: Date? = nil
+    private let alerts: AlertPresenting
+
+    init(alerts: AlertPresenting) {
+        self.alerts = alerts
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("PreferencesViewController is created in code.")
+    }
 
     private static func makeURLField() -> NSTextField {
         let field = NSTextField()
@@ -303,7 +313,7 @@ class PreferencesViewController: NSViewController {
         if url?.pathExtension == endsWith {
             Defaults[defaultsKey] = url
         } else {
-            Helpers().showAlert(messageText: "Invalid URL", informativeText: "Invalid URL given: \(urlString). File must have extension '.\(endsWith)'", alertStyle: .critical)
+            alerts.showAlert(messageText: "Invalid URL", informativeText: "Invalid URL given: \(urlString). File must have extension '.\(endsWith)'", alertStyle: .critical)
             throw NSError()
         }
     }

@@ -7,7 +7,7 @@
 //
 import RealmSwift
 
-protocol ToolbarDelegate {
+protocol ToolbarDelegate: AnyObject {
     func setContent(_ content: Results<Item>?)
 
     func filterType(itemType: ItemType, region: String)

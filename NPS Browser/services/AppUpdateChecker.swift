@@ -8,7 +8,16 @@
 
 import Foundation
 
+@MainActor
 class AppUpdateChecker {
+
+    private let loading: LoadingPresenting
+    private let alerts: AlertPresenting
+
+    init(loading: LoadingPresenting, alerts: AlertPresenting) {
+        self.loading = loading
+        self.alerts = alerts
+    }
 
     struct LatestRelease {
         let version: String
@@ -30,10 +39,9 @@ class AppUpdateChecker {
                              browserDownloadURL: browserDownloadURL)
     }
 
-    @MainActor
     func downloadUpdate(url: URL) async {
-        Helpers().showLoadingViewController()
-        Helpers().loadingViewController.setLabel(text: "Fetching update...")
+        loading.show()
+        loading.setLabel(text: "Fetching update...")
 
         let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
@@ -45,15 +53,15 @@ class AppUpdateChecker {
 
         do {
             _ = try await FileDownload(url: url, destination: destination).run { fraction in
-                Helpers().loadingViewController.setLabel(text: "Downloading...")
-                Helpers().loadingViewController.setProgress(amount: fraction * 100)
+                loading.setLabel(text: "Downloading...")
+                loading.setProgress(amount: fraction * 100)
             }
-            Helpers().showAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
+            alerts.showAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
         } catch {
-            Helpers().showAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
+            alerts.showAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
         }
 
-        Helpers().loadingViewController.closeWindow()
+        loading.close()
     }
 
 }

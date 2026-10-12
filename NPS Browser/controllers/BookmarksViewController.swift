@@ -13,6 +13,20 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
 
     private let tableView = NSTableView()
     private var bookmarks: [Bookmark] = []
+    private let downloads: DownloadQueuing
+    private let animationTarget: DownloadsButtonProviding
+    private let onBookmarkRemoved: (String) -> Void
+
+    init(downloads: DownloadQueuing, animationTarget: DownloadsButtonProviding, onBookmarkRemoved: @escaping (String) -> Void) {
+        self.downloads = downloads
+        self.animationTarget = animationTarget
+        self.onBookmarkRemoved = onBookmarkRemoved
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("BookmarksViewController is created in code.")
+    }
 
     override func loadView() {
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("bookmark"))
@@ -61,9 +75,25 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
 
         DBManager().delete(storedBookmark!)
 
-        Helpers().dataController.detailsViewController.toggleBookmark(comparePK: uuid!)
+        onBookmarkRemoved(uuid!)
 
         updateView()
+    }
+
+    private func download(_ bookmark: Bookmark, from button: NSButton) {
+        DownloadFlyAnimation.run(image: button.image, from: button, to: animationTarget)
+
+        // TODO: Add all 3 download types to DL list
+
+        let downloadItem              = DownloadItem()
+        downloadItem.fileType         = bookmark.fileType
+        downloadItem.consoleType      = bookmark.consoleType
+        downloadItem.titleId          = bookmark.titleId
+        downloadItem.name             = bookmark.name
+        downloadItem.downloadURL      = URL(string: bookmark.downloadUrl ?? "")
+        downloadItem.zrif             = bookmark.zrif
+
+        downloads.enqueue(downloadItem)
     }
 
     func updateView() {
@@ -85,6 +115,9 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         cell.objectValue = bookmarks[row]
         cell.onRemove = { [weak self] bookmark in
             self?.removeBookmark(bookmark)
+        }
+        cell.onDownload = { [weak self] bookmark, button in
+            self?.download(bookmark, from: button)
         }
         return cell
     }

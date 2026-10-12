@@ -10,12 +10,18 @@ import Cocoa
 import CryptoKit
 
 @MainActor
-class DownloadManager {
-    
+class DownloadManager: DownloadQueuing {
+
     var downloadItems: [DownloadItem] = []
     private let slots = DownloadSlots(limit: Defaults[.concurrentDownloads])
-    
-    init() {
+    private let alerts: AlertPresenting
+    private let notifications: NotificationSending
+    private let directory: DownloadsDirectoryPreparing
+
+    init(alerts: AlertPresenting, notifications: NotificationSending, directory: DownloadsDirectoryPreparing) {
+        self.alerts = alerts
+        self.notifications = notifications
+        self.directory = directory
         restoreDownloadList()
     }
     
@@ -41,7 +47,7 @@ class DownloadManager {
         if (try? Folder(path: filepath.path).createSubfolderIfNeeded(withName: console!)) != nil {
             return
         } else {
-            Helpers().sharedAppDelegate.setupDownloadsDirectory()
+            directory.prepare()
             createConsoleFolder(for: item)
         }
     }
@@ -152,7 +158,7 @@ class DownloadManager {
             let data = try PropertyListEncoder().encode(downloadList)
             UserDefaults.standard.set(data, forKey: "downloads")
         } catch {
-            Helpers().showAlert(messageText: "Save Failed",
+            alerts.showAlert(messageText: "Save Failed",
                                 informativeText: "Download list could not be stored.",
                                 alertStyle: .warning)
             
@@ -206,7 +212,7 @@ class DownloadManager {
 
                 enqueue(item.doNext!)
             } else {
-                await ExtractionManager(item: item, downloadManager: self).start()
+                await ExtractionManager(item: item, downloadManager: self, notifications: notifications).start()
             }
         }
     }
@@ -324,7 +330,7 @@ class DownloadManager {
         let actual = await FileChecksum.sha256(of: fileURL)
         if let actual = actual, actual != expected {
             log.warning("Checksum mismatch for \(fileURL.lastPathComponent)")
-            Helpers().showAlert(messageText: "Checksum mismatch",
+            alerts.showAlert(messageText: "Checksum mismatch",
                                 informativeText: "\(item.name ?? fileURL.lastPathComponent) does not match the expected SHA256. The file may be damaged or the list may be outdated.",
                                 alertStyle: .warning)
         }

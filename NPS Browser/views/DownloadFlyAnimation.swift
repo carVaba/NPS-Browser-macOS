@@ -5,9 +5,9 @@ enum DownloadFlyAnimation {
     private static let duration: TimeInterval = 0.6
     private static let endSize: CGFloat = 24
 
-    static func run(image: NSImage?, from source: NSView) {
+    static func run(image: NSImage?, from source: NSView, to targetProvider: DownloadsButtonProviding) {
         guard let window = source.window,
-              let target = Helpers().windowDelegate.downloadsButton,
+              let target = targetProvider.downloadsButton,
               let targetWindow = target.window,
               !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else {
             return

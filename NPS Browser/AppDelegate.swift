@@ -14,16 +14,19 @@ import RealmSwift
 let log = SwiftyBeaver.self
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NotificationSending {
     
-    lazy var downloadManager: DownloadManager = DownloadManager()
+    private let alerts = AppKitAlertPresenter()
+    private let sources = DefaultsSourceURLs()
+    private let downloadsDirectory = DefaultsDownloadsDirectory()
+    lazy var downloadManager = DownloadManager(alerts: alerts, notifications: self, directory: downloadsDirectory)
     private(set) var windowController: WindowController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupSwiftyBeaverLogging()
-        setupDownloadsDirectory()
+        downloadsDirectory.prepare()
 
-        windowController = WindowController()
+        windowController = WindowController(downloads: downloadManager, alerts: alerts, sources: sources)
         NSApp.mainMenu = MainMenu.make(appDelegate: self, windowController: windowController)
         windowController.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -33,7 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         guard let parent = windowController.window?.contentViewController else {
             return
         }
-        parent.presentAsModalWindow(PreferencesViewController())
+        parent.presentAsModalWindow(PreferencesViewController(alerts: alerts))
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -54,27 +57,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         log.addDestination(console)
         log.addDestination(file)
-    }
-    
-    func setupDownloadsDirectory() {
-        var dlFolder: URL? = Defaults[.libraryLocation]
-        
-        
-//        if (try! !dlFolder.checkResourceIsReachable()) {
-//            dlFolder =
-//            try! Defaults[.libraryLocation] = dlFolder
-//        }
-        
-        let dlDirName = "NPS Downloads"
-        
-        do {
-            try Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
-        } catch {
-            dlFolder = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
-            Defaults.set(dlFolder!.absoluteURL, forKey: "dl_library_location")
-            try! Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
-        }
-        
     }
     
     // MARK: - Notifications

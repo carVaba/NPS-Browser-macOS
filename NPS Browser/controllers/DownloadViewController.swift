@@ -13,6 +13,16 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
 
     private let dlTableView = NSTableView()
     private var items: [DownloadItem] = []
+    private let downloads: DownloadQueuing
+
+    init(downloads: DownloadQueuing) {
+        self.downloads = downloads
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("DownloadViewController is created in code.")
+    }
 
     private var listObserver: NSObjectProtocol?
 
@@ -77,12 +87,12 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
     }
 
     @objc func clearCompleted(_ sender: Any) {
-        Helpers().sharedAppDelegate.downloadManager.removeCompleted()
+        downloads.removeCompleted()
         updateView()
     }
 
     func updateView() {
-        items = Helpers().sharedAppDelegate.downloadManager.downloadItems
+        items = downloads.downloadItems
         dlTableView.reloadData()
     }
 
@@ -96,7 +106,7 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let cell = tableView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? DownloadListItemCellView
-            ?? DownloadListItemCellView(identifier: Self.cellIdentifier)
+            ?? DownloadListItemCellView(identifier: Self.cellIdentifier, downloads: downloads)
         cell.objectValue = items[row]
         return cell
     }

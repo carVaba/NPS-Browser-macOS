@@ -34,7 +34,8 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
     }()
 
     private let tableView = NSTableView()
-    lazy var windowDelegate: WindowDelegate = Helpers().windowDelegate
+    private let selection: ItemSelecting
+    private let loader: ListLoading
 
     // Declared before `items`: it sets the default Realm configuration with the migration.
     private var realm: Realm = DBMigration.configureMigration()
@@ -45,6 +46,16 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
     private var baseResults: Results<Item>?
     private var results: Results<Item>?
     private var isReloading = false
+
+    init(selection: ItemSelecting, loader: ListLoading) {
+        self.selection = selection
+        self.loader = loader
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("DataViewController is created in code.")
+    }
 
     override func loadView() {
         for column in Self.columns {
@@ -74,15 +85,23 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
     }
 
     override func viewDidAppear() {
-        let it = windowDelegate.itemType
+        let it = selection.itemType
         let ct = it.console.rawValue
         let ft = it.fileType.rawValue
-        let reg = windowDelegate.region
+        let reg = selection.region
 
         if (items?.isEmpty)! {
-            Task { await NetworkManager().makeRequest() }
+            requestData()
         } else {
             setContent(items?.filter(NSPredicate(format: "consoleType == %@ AND fileType == %@ AND region == %@ AND pkgDirectLink != 'MISSING'", ct, ft, reg)))
+        }
+    }
+
+    // Loads the list from the source, then shows what the toolbar selects.
+    func requestData() {
+        Task {
+            await loader.makeRequest()
+            setContent(applySearch(to: typeContent(itemType: selection.itemType, region: selection.region)))
         }
     }
 
@@ -94,7 +113,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
 
     var predicateString: String {
         var str = "consoleType == %@ AND fileType == %@ AND region == %@ "
-        let it = windowDelegate.itemType
+        let it = selection.itemType
 
         if Defaults[.hidesInvalidURLItems] {
             str.append(" AND pkgDirectLink != 'MISSING'")
@@ -109,20 +128,27 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
     }
 
     func filterType(itemType: ItemType, region: String) {
-        let p = NSPredicate(format: predicateString, itemType.console.rawValue, itemType.fileType.rawValue, region)
-        let objects = items!.filter(p)
+        let objects = typeContent(itemType: itemType, region: region)
 
         if objects.isEmpty {
-            Task { await NetworkManager().makeRequest() }
+            requestData()
         }
 
-        // The search text stays active when the console or the region changes.
-        let searchString = windowDelegate.searchString
+        setContent(applySearch(to: objects))
+    }
+
+    private func typeContent(itemType: ItemType, region: String) -> Results<Item> {
+        let p = NSPredicate(format: predicateString, itemType.console.rawValue, itemType.fileType.rawValue, region)
+        return items!.filter(p)
+    }
+
+    // The search text stays active when the console or the region changes.
+    private func applySearch(to objects: Results<Item>) -> Results<Item> {
+        let searchString = selection.searchString
         if searchString.isEmpty {
-            setContent(objects)
-        } else {
-            setContent(objects.filter("name contains[c] %@", searchString))
+            return objects
         }
+        return objects.filter("name contains[c] %@", searchString)
     }
 
     func filterString(itemType: ItemType, region: String, searchString: String) {
