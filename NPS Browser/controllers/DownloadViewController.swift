@@ -30,7 +30,7 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("download"))
         dlTableView.addTableColumn(column)
         dlTableView.headerView = nil
-        dlTableView.rowHeight = 56
+        dlTableView.rowHeight = 68
         dlTableView.selectionHighlightStyle = .none
         dlTableView.usesAlternatingRowBackgroundColors = true
         dlTableView.dataSource = self

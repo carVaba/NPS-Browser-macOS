@@ -93,6 +93,7 @@ class DownloadManager: DownloadQueuing {
     func stop(_ item: DownloadItem) {
         item.isUserStopped = true
         item.status = "Stopped"
+        item.clearTransferRate()
         item.makeResumable()
 
         guard let download = item.download else {
@@ -226,16 +227,23 @@ class DownloadManager: DownloadQueuing {
 
         for number in 1...Self.maxAttempts {
             do {
-                let fileURL = try await attempt.run(onProgress: { fraction in
+                let rate = TransferRateEstimator()
+                let fileURL = try await attempt.run(onProgress: { progress in
                     item.status = "Downloading..."
                     item.makeStoppable()
-                    item.progress = (fraction * 100).rounded()
-                    item.timeRemaining = fraction
+                    item.progress = (progress.fraction * 100).rounded()
+                    rate.update(bytesWritten: progress.bytesWritten)
+                    item.bytesPerSecond = rate.bytesPerSecond
+                    item.timeRemaining = rate.remainingSeconds(bytesWritten: progress.bytesWritten,
+                                                               bytesExpected: progress.bytesExpected) ?? 0
                 }, onWaiting: {
                     item.status = "Waiting for the network..."
+                    item.clearTransferRate()
                 })
+                item.clearTransferRate()
                 return .success(fileURL)
             } catch {
+                item.clearTransferRate()
                 var canRetry = Self.isRetryable(error)
                 if !canRetry, !resumeFromURLUsed, attempt.usesResumeData, !Self.isCancelled(error) {
                     // The resume data is not valid any more, so the file starts again.

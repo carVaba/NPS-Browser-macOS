@@ -52,9 +52,9 @@ class AppUpdateChecker {
         }
 
         do {
-            _ = try await FileDownload(url: url, destination: destination).run { fraction in
+            _ = try await FileDownload(url: url, destination: destination).run { progress in
                 loading.setLabel(text: "Downloading...")
-                loading.setProgress(amount: fraction * 100)
+                loading.setProgress(amount: progress.fraction * 100)
             }
             alerts.showAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
         } catch {

@@ -23,7 +23,9 @@ class DownloadItem: NSObject, Codable {
     @objc dynamic var zrif              : String?
     var sha256                          : String?
     @objc dynamic var status            : String?
+    // Seconds until the download ends. 0 when it is not known.
     @objc dynamic var timeRemaining     : TimeInterval = 0
+    @objc dynamic var bytesPerSecond    : Double = 0
     var download                        : FileDownload?
     var resumeData                      : Data?
     // Set when the user stops or cancels, so a retry must not start.
@@ -83,6 +85,11 @@ class DownloadItem: NSObject, Codable {
         self.fileType = fileType.rawValue
     }
     
+    func clearTransferRate() {
+        bytesPerSecond = 0
+        timeRemaining = 0
+    }
+
     var hasFollowUp: Bool {
         return doNext != nil
     }

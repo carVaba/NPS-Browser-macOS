@@ -18,8 +18,14 @@ struct HTTPStatusError: Error {
     let statusCode: Int
 }
 
+struct DownloadProgress: Sendable {
+    let fraction: Double
+    let bytesWritten: Int64
+    let bytesExpected: Int64
+}
+
 enum DownloadEvent: Sendable {
-    case progress(Double)
+    case progress(DownloadProgress)
     case waitingForConnectivity
     case finished(URL)
 }
@@ -56,7 +62,7 @@ actor FileDownload {
         self.destination = destination
     }
 
-    func run(onProgress: @MainActor @Sendable (Double) -> Void = { _ in },
+    func run(onProgress: @MainActor @Sendable (DownloadProgress) -> Void = { _ in },
              onWaiting: @MainActor @Sendable () -> Void = {}) async throws -> URL {
         guard !isStopped else {
             throw DownloadFailure(underlying: URLError(.cancelled), resumeData: nil)
@@ -64,8 +70,8 @@ actor FileDownload {
 
         for try await event in makeEvents() {
             switch event {
-            case .progress(let fraction):
-                await onProgress(fraction)
+            case .progress(let progress):
+                await onProgress(progress)
             case .waitingForConnectivity:
                 await onWaiting()
             case .finished(let fileURL):
@@ -127,7 +133,9 @@ private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unc
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,
                     totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         guard totalBytesExpectedToWrite > 0 else { return }
-        continuation.yield(.progress(Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)))
+        continuation.yield(.progress(DownloadProgress(fraction: Double(totalBytesWritten) / Double(totalBytesExpectedToWrite),
+                                                      bytesWritten: totalBytesWritten,
+                                                      bytesExpected: totalBytesExpectedToWrite)))
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
@@ -176,7 +184,7 @@ enum HTTPClient {
         defer { try? FileManager.default.removeItem(at: temporaryFile) }
 
         do {
-            let file = try await FileDownload(url: url) { _ in temporaryFile }.run(onProgress: onProgress)
+            let file = try await FileDownload(url: url) { _ in temporaryFile }.run(onProgress: { onProgress($0.fraction) })
             return try Data(contentsOf: file)
         } catch let failure as DownloadFailure {
             throw failure.underlying

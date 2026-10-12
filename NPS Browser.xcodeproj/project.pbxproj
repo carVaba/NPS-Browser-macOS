@@ -53,6 +53,7 @@
 		51EBE8262094E095005D44DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51EBE8252094E095005D44DC /* Assets.xcassets */; };
 		7278423C289C32418CAD17D7 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = FB15D42715B0D1EDD54B1288 /* Zip */; };
 		7479B9A1F2CF70D619FE4F27 /* MainToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D990EB3C952DB06161BC1F /* MainToolbar.swift */; };
+		913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C366EE39477128270AA561 /* TransferRateEstimator.swift */; };
 		96E4670D6A71F8B26BAE1A72 /* Presenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD50145399E6CE1D41D6BB2 /* Presenting.swift */; };
 		AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */; };
 		B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; };
@@ -111,6 +112,7 @@
 		51EBE8202094E094005D44DC /* DataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewController.swift; sourceTree = "<group>"; };
 		51EBE8252094E095005D44DC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		51EBE82A2094E095005D44DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55C366EE39477128270AA561 /* TransferRateEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransferRateEstimator.swift; sourceTree = "<group>"; };
 		75D9BE96265F519535EA2137 /* DownloadQueuing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadQueuing.swift; sourceTree = "<group>"; };
 		84662BBC5B57EF1412BB6FDF /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadFlyAnimation.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				FBD50145399E6CE1D41D6BB2 /* Presenting.swift */,
 				FA8E809C334CBA9436788EE4 /* SourceURLProviding.swift */,
 				75D9BE96265F519535EA2137 /* DownloadQueuing.swift */,
+				55C366EE39477128270AA561 /* TransferRateEstimator.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -416,6 +419,7 @@
 				BF20C373ECF91188CF36060F /* DownloadQueuing.swift in Sources */,
 				CAC1AF94FB86C17C2003249A /* ItemSelecting.swift in Sources */,
 				7479B9A1F2CF70D619FE4F27 /* MainToolbar.swift in Sources */,
+				913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

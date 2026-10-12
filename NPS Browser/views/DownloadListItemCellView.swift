@@ -16,6 +16,17 @@ class DownloadListItemCellView: NSTableCellView {
         return formatter
     }()
 
+    private static let speedFormatter = ByteCountFormatter()
+
+    private static let durationFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.maximumUnitCount = 2
+        formatter.zeroFormattingBehavior = .dropAll
+        return formatter
+    }()
+
     private let btnAction = NSButton()
     private let btnCancel = NSButton()
     private let progressBar = NSProgressIndicator()
@@ -37,6 +48,7 @@ class DownloadListItemCellView: NSTableCellView {
 
         progressBar.style = .bar
         progressBar.isIndeterminate = false
+        progressBar.controlSize = .small
         progressBar.minValue = 0
         progressBar.maxValue = 100
         progressBar.translatesAutoresizingMaskIntoConstraints = false
@@ -109,6 +121,7 @@ class DownloadListItemCellView: NSTableCellView {
             item.observe(\.progress) { object, _ in update(object) },
             item.observe(\.status) { object, _ in update(object) },
             item.observe(\.timeRemaining) { object, _ in update(object) },
+            item.observe(\.bytesPerSecond) { object, _ in update(object) },
             item.observe(\.isStoppable) { object, _ in update(object) },
             item.observe(\.isResumable) { object, _ in update(object) },
             item.observe(\.isViewable) { object, _ in update(object) }
@@ -123,8 +136,21 @@ class DownloadListItemCellView: NSTableCellView {
         typeLabel.stringValue = item.fileType ?? ""
         statusLabel.stringValue = item.status ?? ""
         progressBar.doubleValue = item.progress
-        detailsLabel.stringValue = Self.percentFormatter.string(from: NSNumber(value: item.timeRemaining)) ?? ""
+        detailsLabel.stringValue = detailsText(for: item)
         changeImage()
+    }
+
+    // Shows the percent, and the speed with the time left while the download runs.
+    private func detailsText(for item: DownloadItem) -> String {
+        var parts = [Self.percentFormatter.string(from: NSNumber(value: item.progress / 100)) ?? ""]
+
+        if item.isStoppable, item.bytesPerSecond > 0 {
+            parts.append(Self.speedFormatter.string(fromByteCount: Int64(item.bytesPerSecond)) + "/s")
+            if item.timeRemaining > 0, let duration = Self.durationFormatter.string(from: item.timeRemaining) {
+                parts.append(String(format: "%@ left".localized, duration))
+            }
+        }
+        return parts.joined(separator: " · ")
     }
 
     @objc func doAction(_ sender: Any) {
