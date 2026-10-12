@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,7 +30,6 @@
 		517FD72121153BB700E56CB6 /* GameArtworkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517FD72021153BB700E56CB6 /* GameArtworkViewController.swift */; };
 		517FD72321153C5100E56CB6 /* PSNStoreAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517FD72221153C5100E56CB6 /* PSNStoreAPI.swift */; };
 		5182C57F21140757003A5527 /* ItemType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5182C57E21140757003A5527 /* ItemType.swift */; };
-		51843FD120CB9DF2009AE9A4 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 51843FD020CB9DF2009AE9A4 /* .gitignore */; };
 		518A35FD2127BC4900F661F5 /* DefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518A35FC2127BC4900F661F5 /* DefaultsKeys.swift */; };
 		518A892E213062E800821EE7 /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = 518A892D213062E800821EE7 /* LICENSE.md */; };
 		518F8D8721270AB9005530C6 /* GHLatestRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518F8D8621270AB9005530C6 /* GHLatestRelease.swift */; };
@@ -64,9 +63,24 @@
 		CAC1AF94FB86C17C2003249A /* ItemSelecting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD933E6EDE6E234DD1B71BD /* ItemSelecting.swift */; };
 		D1706B58FD3AEB380A99292F /* DownloadFolderLocating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881CC958C91B9C766D00927E /* DownloadFolderLocating.swift */; };
 		E6393DA65B0885DA39E311C8 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481F332F3D80331DA485DAAA /* MainMenu.swift */; };
+		E747FDEE80EF48E26BC925CC /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E7953F4AC8E2841B966ED27D /* SourceURLProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8E809C334CBA9436788EE4 /* SourceURLProviding.swift */; };
 		F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5472C76A782FF1648B21CF2 /* HTTPClient.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		216D5ABAC31F5473C7DD9CBB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E747FDEE80EF48E26BC925CC /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0099598B9832558EC7024AB4 /* AppKitExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppKitExtensions.swift; sourceTree = "<group>"; };
@@ -149,7 +163,6 @@
 			children = (
 				9C371002D648FFF9228DD92F /* ItemListViewModel.swift */,
 			);
-			name = viewmodels;
 			path = viewmodels;
 			sourceTree = "<group>";
 		};
@@ -309,6 +322,7 @@
 				51EBE8172094E094005D44DC /* Sources */,
 				51EBE8182094E094005D44DC /* Frameworks */,
 				51EBE8192094E094005D44DC /* Resources */,
+				216D5ABAC31F5473C7DD9CBB /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -376,7 +390,6 @@
 			files = (
 				51E82B0D210CEBAC00E68A31 /* vitaupdatelinks in Resources */,
 				516A1B7920CAE28A004D6AE5 /* README.md in Resources */,
-				51843FD120CB9DF2009AE9A4 /* .gitignore in Resources */,
 				51EBE8262094E095005D44DC /* Assets.xcassets in Resources */,
 				518A892E213062E800821EE7 /* LICENSE.md in Resources */,
 				516A1B7720CAE276004D6AE5 /* CHANGELOG.md in Resources */,
