@@ -9,70 +9,72 @@
 import Foundation
 import RealmSwift
 
-class DBManager {
-    
-    let storage = try! RealmStorageContext()
-    
-    // MARK: Create
-    func store(_ object: Storable) {
+// A small wrapper around the default Realm. Use it on the main thread.
+final class DBManager {
+    private let realm: Realm?
+
+    init() {
         do {
-            try storage.safeWrite {
-                storage.realm?.add(object as! Object)
-            }
-        } catch let error as NSError {
+            realm = try Realm()
+        } catch {
             log.error(error)
+            realm = nil
         }
     }
-    
+
+    func store(_ object: Object) {
+        store(contentsOf: [object])
+    }
+
     func store(contentsOf objects: [Object]) {
+        write { $0.add(objects) }
+    }
+
+    func fetch<T: Object>(_ model: T.Type, predicate: NSPredicate? = nil) -> [T] {
+        guard let realm = realm else {
+            return []
+        }
+        let objects = realm.objects(model)
+        return Array(predicate.map { objects.filter($0) } ?? objects)
+    }
+
+    func delete(_ object: Object) {
+        write { $0.delete(object) }
+    }
+
+    func deleteAll<T: Object>(_ model: T.Type, predicate: NSPredicate? = nil) throws {
+        guard let realm = realm else {
+            throw DBError.unavailable
+        }
+        let objects = realm.objects(model)
+        let matching = predicate.map { objects.filter($0) } ?? objects
+        try perform(in: realm) {
+            realm.delete(matching)
+        }
+    }
+
+    private func write(_ block: (Realm) -> Void) {
+        guard let realm = realm else {
+            return
+        }
         do {
-            try storage.safeWrite {
-                storage.realm?.add(objects)
+            try perform(in: realm) {
+                block(realm)
             }
-        } catch let error as NSError {
-            log.error(error)
-        }
-    }    
-    
-    // MARK: Read
-    func fetch<T>(_ model: T.Type, predicate: NSPredicate? = nil, sorted: Sorted? = nil) -> [T]{
-        var objects = storage.realm?.objects(model as! Object.Type)
-        
-        if let predicate = predicate {
-            objects = objects?.filter(predicate)
-        }
-        
-        if let sorted = sorted {
-            objects = objects?.sorted(byKeyPath: sorted.key, ascending: sorted.ascending)
-        }
-        
-        var arr: [T] = [T]()
-        for obj in objects! {
-            arr.append(obj as! T)
-        }
-        
-        return arr
-    }
-    
-    // MARK: Delete
-    func delete(_ object: Storable) {
-        do {
-            try storage.delete(object: object)
-        } catch let error as NSError {
+        } catch {
             log.error(error)
         }
     }
-    
-    func deleteAll<T: Storable>(_ model: T.Type) throws {
-        do {
-            try storage.safeWrite {
-                let objects = storage.realm?.objects(model as! Object.Type)
-                for object in objects! {
-                    storage.realm?.delete(object)
-                }
-            }
-        } catch let error as NSError {
-            log.error(error)
+
+    private func perform(in realm: Realm, _ block: () -> Void) throws {
+        if realm.isInWriteTransaction {
+            block()
+        } else {
+            try realm.write(block)
         }
     }
+}
+
+enum DBError: Error {
+    case unavailable
 }

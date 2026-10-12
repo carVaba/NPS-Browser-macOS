@@ -41,7 +41,7 @@ final class ItemListViewModel {
     }
 
     func start() {
-        if provider.allItems.isEmpty {
+        if provider.allItems?.isEmpty ?? true {
             Task { await reload() }
         } else {
             showSelectedContent()
@@ -55,7 +55,7 @@ final class ItemListViewModel {
     }
 
     func typeChanged() {
-        if typeContent().isEmpty {
+        if typeContent()?.isEmpty ?? true {
             Task { await reload() }
         }
         showSelectedContent()
@@ -65,7 +65,7 @@ final class ItemListViewModel {
         showSelectedContent()
     }
 
-    private func typeContent() -> Results<Item> {
+    private func typeContent() -> Results<Item>? {
         let itemType = selection.itemType
         var format = "consoleType == %@ AND fileType == %@ AND region == %@"
 
@@ -77,14 +77,13 @@ final class ItemListViewModel {
         }
 
         let predicate = NSPredicate(format: format, itemType.console.rawValue, itemType.fileType.rawValue, selection.region)
-        return provider.allItems.filter(predicate)
+        return provider.allItems?.filter(predicate)
     }
 
     // The search text stays active when the console or the region changes.
     private func showSelectedContent() {
-        let objects = typeContent()
         let searchString = selection.searchString
-        baseResults = searchString.isEmpty ? objects : objects.filter("name contains[c] %@", searchString)
+        baseResults = typeContent().map { searchString.isEmpty ? $0 : $0.filter("name contains[c] %@", searchString) }
         rebuildRows()
     }
 

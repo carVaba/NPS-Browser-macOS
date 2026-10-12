@@ -216,7 +216,7 @@ class DetailsViewController: NSViewController {
 
     private func makeCompatItem(for obj: Item, titleID: String, type: String, fileType: FileType) -> DownloadItem? {
         let predicate = NSPredicate(format: "titleId == %@ AND type == %@", titleID, type)
-        guard let entry = DBManager().fetch(CompatPack.self, predicate: predicate, sorted: nil).first,
+        guard let entry = DBManager().fetch(CompatPack.self, predicate: predicate).first,
               let link = entry.downloadUrl, let url = URL(string: link) else {
             return nil
         }

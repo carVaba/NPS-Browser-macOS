@@ -37,9 +37,6 @@
 		5192CE7F211E18EA004A2E90 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE7E211E18EA004A2E90 /* NetworkManager.swift */; };
 		5192CE81211E219D004A2E90 /* CompatPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE80211E219D004A2E90 /* CompatPack.swift */; };
 		5192CE83211E31B4004A2E90 /* DBManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE82211E31B4004A2E90 /* DBManager.swift */; };
-		5192CE86211F1968004A2E90 /* LayerProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE85211F1968004A2E90 /* LayerProtocols.swift */; };
-		5192CE88211F1977004A2E90 /* LayerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE87211F1977004A2E90 /* LayerAPI.swift */; };
-		5192CE8A211F19FA004A2E90 /* RealmStorageContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE89211F19FA004A2E90 /* RealmStorageContext.swift */; };
 		5192CE8C211F1AAE004A2E90 /* Bookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5192CE8B211F1AAE004A2E90 /* Bookmark.swift */; };
 		51932D9720DEEA8400F44520 /* LoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51932D9620DEEA8400F44520 /* LoadingViewController.swift */; };
 		51932D9920DF06C700F44520 /* LoadingViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51932D9820DF06C700F44520 /* LoadingViewDelegate.swift */; };
@@ -101,9 +98,6 @@
 		5192CE7E211E18EA004A2E90 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		5192CE80211E219D004A2E90 /* CompatPack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatPack.swift; sourceTree = "<group>"; };
 		5192CE82211E31B4004A2E90 /* DBManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBManager.swift; sourceTree = "<group>"; };
-		5192CE85211F1968004A2E90 /* LayerProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerProtocols.swift; sourceTree = "<group>"; };
-		5192CE87211F1977004A2E90 /* LayerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerAPI.swift; sourceTree = "<group>"; };
-		5192CE89211F19FA004A2E90 /* RealmStorageContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmStorageContext.swift; sourceTree = "<group>"; };
 		5192CE8B211F1AAE004A2E90 /* Bookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bookmark.swift; sourceTree = "<group>"; };
 		51932D9620DEEA8400F44520 /* LoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewController.swift; sourceTree = "<group>"; };
 		51932D9820DF06C700F44520 /* LoadingViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewDelegate.swift; sourceTree = "<group>"; };
@@ -242,9 +236,6 @@
 			isa = PBXGroup;
 			children = (
 				5192CE84211F192D004A2E90 /* models */,
-				5192CE85211F1968004A2E90 /* LayerProtocols.swift */,
-				5192CE87211F1977004A2E90 /* LayerAPI.swift */,
-				5192CE89211F19FA004A2E90 /* RealmStorageContext.swift */,
 				516019E72131D65300BD7B0C /* DBMigration.swift */,
 			);
 			path = db;
@@ -415,9 +406,7 @@
 				516019E82131D65300BD7B0C /* DBMigration.swift in Sources */,
 				517CD22C20AFA4A200C33623 /* DownloadViewController.swift in Sources */,
 				5177A78820C3508D002F81F9 /* ExtractionManager.swift in Sources */,
-				5192CE86211F1968004A2E90 /* LayerProtocols.swift in Sources */,
 				5192CE83211E31B4004A2E90 /* DBManager.swift in Sources */,
-				5192CE88211F1977004A2E90 /* LayerAPI.swift in Sources */,
 				51ABB7572115D8A3009C98DA /* Item.swift in Sources */,
 				517FD72321153C5100E56CB6 /* PSNStoreAPI.swift in Sources */,
 				5139DF87209F6DE9004F65F9 /* WindowController.swift in Sources */,
@@ -430,7 +419,6 @@
 				519F0D7320CC852C00332987 /* BookmarkListItemCellView.swift in Sources */,
 				5182C57F21140757003A5527 /* ItemType.swift in Sources */,
 				5108B79E211641190065BA71 /* TSVData.swift in Sources */,
-				5192CE8A211F19FA004A2E90 /* RealmStorageContext.swift in Sources */,
 				F24ED29357D0546B950111CB /* HTTPClient.swift in Sources */,
 				AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */,
 				B991C52FD4DDE1B0B7CD029B /* main.swift in Sources */,

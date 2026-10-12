@@ -13,7 +13,8 @@ final class DBMigration {
     // MARK: - Properties
     static let currentSchemaVersion: UInt64 = 0
     
-    static func configureMigration() -> Realm {
+    // Sets the default configuration, so every `Realm()` opens the file with the migration.
+    static func configureMigration() throws -> Realm {
         let config = Realm.Configuration(
             // Set the new schema version here. This must be greater than the previous version
             schemaVersion: 1,
@@ -30,20 +31,19 @@ final class DBMigration {
             }
         )
         
-        // Tell Realm to use this new configuration object for the default Realm
-        return try! Realm(configuration: config)
+        Realm.Configuration.defaultConfiguration = config
+        return try Realm(configuration: config)
     }
     
     
     // MARK: - Migrations
     static func zeroToOne(with migration: Migration) {
         migration.enumerateObjects(ofType: Item.className()) { oldItem, newItem in
-            let filetype = oldItem!["fileType"] as! String
-            let tid = oldItem!["titleId"] as! String
-            let reg = oldItem!["region"] as! String
-            let cid = oldItem!["contentId"] as! String
-            
-            newItem?["pk"] = "\(reg)\(filetype)\(tid)\(cid)"
+            guard let oldItem = oldItem else {
+                return
+            }
+            let key = ["region", "fileType", "titleId", "contentId"].map { oldItem[$0] as? String ?? "" }
+            newItem?["pk"] = key.joined()
         }
     }
     

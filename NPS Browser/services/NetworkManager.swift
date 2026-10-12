@@ -53,7 +53,6 @@ class NetworkManager: ListLoading, UpdateLinkFetching {
             }
         }
 
-        let storage = try! RealmStorageContext()
         let ft:FileType = selection.itemType.fileType
         let ct:ConsoleType = selection.itemType.console
         
@@ -73,7 +72,7 @@ class NetworkManager: ListLoading, UpdateLinkFetching {
 
             loading.setLabel(text: "Removing old values... (step 4/5)")
             loading.setProgress(amount: 50)
-            try storage.deleteAll(Item.self, predicate: NSPredicate(format: "fileType == %@ AND consoleType == %@", ft.rawValue, ct.rawValue))
+            try DBManager().deleteAll(Item.self, predicate: NSPredicate(format: "fileType == %@ AND consoleType == %@", ft.rawValue, ct.rawValue))
 
             loading.setLabel(text: "Storing new values... (step 5/5)")
             loading.setProgress(amount: 20)
@@ -130,8 +129,6 @@ class NetworkManager: ListLoading, UpdateLinkFetching {
             return
         }
         
-        let storage = try RealmStorageContext()
-        
         let typeName: String = isPatch ? "CompatPatch" : "CompatPack"
 
         if (loading.isShowing) {
@@ -151,7 +148,7 @@ class NetworkManager: ListLoading, UpdateLinkFetching {
 
         loading.setLabel(text: "Removing old values... (step 4/5)")
         loading.setProgress(amount: 50)
-        try storage.deleteAll(CompatPack.self, predicate: NSPredicate(format: "type == %@", typeName))
+        try DBManager().deleteAll(CompatPack.self, predicate: NSPredicate(format: "type == %@", typeName))
 
         loading.setLabel(text: "Storing new values... (step 5/5)")
         loading.setProgress(amount: 20)
