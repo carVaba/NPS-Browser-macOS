@@ -48,6 +48,8 @@ class DownloadListItemCellView: NSTableCellView {
 
         let name = NSTextField.makeLabel()
         name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        // Like Safari: a long name keeps its start and its end, and the middle is cut.
+        name.lineBreakMode = .byTruncatingMiddle
         textField = name
 
         progressBar.translatesAutoresizingMaskIntoConstraints = false
@@ -141,6 +143,7 @@ class DownloadListItemCellView: NSTableCellView {
             return
         }
         textField?.stringValue = item.name ?? ""
+        textField?.toolTip = item.name
         typeLabel.stringValue = item.fileType ?? ""
         statusLabel.stringValue = item.status ?? ""
         progressBar.fraction = item.progress / 100

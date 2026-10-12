@@ -21,6 +21,7 @@ class BookmarkListItemCellView: NSTableCellView {
 
         let name = NSTextField.makeLabel()
         name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        name.lineBreakMode = .byTruncatingMiddle
         textField = name
 
         for (button, symbol, action) in [(btnDownload, "arrow.down.circle", #selector(btnDownloadClicked(_:))),
@@ -57,6 +58,7 @@ class BookmarkListItemCellView: NSTableCellView {
         didSet {
             item = objectValue as? Bookmark
             textField?.stringValue = item?.name ?? ""
+            textField?.toolTip = item?.name
         }
     }
 
