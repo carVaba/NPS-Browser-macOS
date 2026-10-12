@@ -8,11 +8,11 @@
 
 import Cocoa
 
-class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+class DownloadViewController: NSViewController {
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("downloadCell")
 
     private let dlTableView = NSTableView()
-    private var items: [DownloadItem] = []
+    private var dataSource: NSTableViewDiffableDataSource<Int, DownloadItem>?
     private let downloads: DownloadQueuing
 
     init(downloads: DownloadQueuing) {
@@ -33,9 +33,11 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
         dlTableView.rowHeight = 68
         dlTableView.selectionHighlightStyle = .none
         dlTableView.usesAlternatingRowBackgroundColors = true
-        dlTableView.dataSource = self
-        dlTableView.delegate = self
         dlTableView.fitSingleColumnToScrollView()
+
+        dataSource = NSTableViewDiffableDataSource<Int, DownloadItem>(tableView: dlTableView) { [weak self] tableView, _, _, item in
+            self?.makeCell(in: tableView, item: item) ?? NSView()
+        }
 
         let scrollView = NSScrollView()
         scrollView.documentView = dlTableView
@@ -92,22 +94,18 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
     }
 
     func updateView() {
-        items = downloads.downloadItems
-        dlTableView.reloadData()
+        var snapshot = NSDiffableDataSourceSnapshot<Int, DownloadItem>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(downloads.downloadItems)
+        Task {
+            await dataSource?.show(snapshot, animated: true)
+        }
     }
 
-    // MARK: - NSTableViewDataSource
-
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return items.count
-    }
-
-    // MARK: - NSTableViewDelegate
-
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+    private func makeCell(in tableView: NSTableView, item: DownloadItem) -> NSView {
         let cell = tableView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? DownloadListItemCellView
             ?? DownloadListItemCellView(identifier: Self.cellIdentifier, downloads: downloads)
-        cell.objectValue = items[row]
+        cell.objectValue = item
         return cell
     }
 }

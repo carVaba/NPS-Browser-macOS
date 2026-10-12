@@ -8,11 +8,12 @@
 
 import Cocoa
 
-class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+class BookmarksViewController: NSViewController {
     private static let cellIdentifier = NSUserInterfaceItemIdentifier("bookmarkCell")
 
     private let tableView = NSTableView()
-    private var bookmarks: [Bookmark] = []
+    private var dataSource: NSTableViewDiffableDataSource<Int, String>?
+    private var bookmarksByID: [String: Bookmark] = [:]
     private let downloads: DownloadQueuing
     private let animationTarget: DownloadsButtonProviding
     private let onBookmarkRemoved: (String) -> Void
@@ -35,9 +36,11 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
         tableView.rowHeight = 32
         tableView.selectionHighlightStyle = .none
         tableView.usesAlternatingRowBackgroundColors = true
-        tableView.dataSource = self
-        tableView.delegate = self
         tableView.fitSingleColumnToScrollView()
+
+        dataSource = NSTableViewDiffableDataSource<Int, String>(tableView: tableView) { [weak self] tableView, _, _, id in
+            self?.makeCell(in: tableView, id: id) ?? NSView()
+        }
 
         let scrollView = NSScrollView()
         scrollView.documentView = tableView
@@ -97,22 +100,25 @@ class BookmarksViewController: NSViewController, NSTableViewDataSource, NSTableV
     }
 
     func updateView() {
-        bookmarks = DBManager().fetch(Bookmark.self)
-        tableView.reloadData()
+        let bookmarks = DBManager().fetch(Bookmark.self)
+        bookmarksByID = Dictionary(bookmarks.compactMap { bookmark in bookmark.uuid.map { ($0, bookmark) } },
+                                   uniquingKeysWith: { first, _ in first })
+
+        var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(bookmarks.compactMap { $0.uuid })
+        Task {
+            await dataSource?.show(snapshot, animated: true)
+        }
     }
 
-    // MARK: - NSTableViewDataSource
-
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return bookmarks.count
-    }
-
-    // MARK: - NSTableViewDelegate
-
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+    private func makeCell(in tableView: NSTableView, id: String) -> NSView {
+        guard let bookmark = bookmarksByID[id] else {
+            return NSView()
+        }
         let cell = tableView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? BookmarkListItemCellView
             ?? BookmarkListItemCellView(identifier: Self.cellIdentifier)
-        cell.objectValue = bookmarks[row]
+        cell.objectValue = bookmark
         cell.onRemove = { [weak self] bookmark in
             self?.removeBookmark(bookmark)
         }

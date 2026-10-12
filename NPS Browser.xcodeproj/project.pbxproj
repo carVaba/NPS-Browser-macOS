@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = AAB24A9706398593467C1B85 /* SwiftyBeaver */; };
+		1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */; };
 		2D20AFE6A9ED9C94D28D6360 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD507C48DF2E0614C5DF5B78 /* Localizable.strings */; };
 		2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0099598B9832558EC7024AB4 /* AppKitExtensions.swift */; };
 		40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 8B47C8806E59F3B66C8CC4A0 /* Fuzi */; };
@@ -117,6 +118,7 @@
 		84662BBC5B57EF1412BB6FDF /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadFlyAnimation.swift; sourceTree = "<group>"; };
 		C1D990EB3C952DB06161BC1F /* MainToolbar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainToolbar.swift; sourceTree = "<group>"; };
+		D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSTableViewDiffableDataSource+Async.swift"; sourceTree = "<group>"; };
 		E114A2ABF1F18FF061500D25 /* zh-Hans */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		F5472C76A782FF1648B21CF2 /* HTTPClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		FA8E809C334CBA9436788EE4 /* SourceURLProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SourceURLProviding.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				0099598B9832558EC7024AB4 /* AppKitExtensions.swift */,
+				D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -420,6 +423,7 @@
 				CAC1AF94FB86C17C2003249A /* ItemSelecting.swift in Sources */,
 				7479B9A1F2CF70D619FE4F27 /* MainToolbar.swift in Sources */,
 				913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */,
+				1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

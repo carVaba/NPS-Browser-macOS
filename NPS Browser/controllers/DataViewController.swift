@@ -9,7 +9,16 @@
 import Cocoa
 import RealmSwift
 
-class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSource, NSTableViewDelegate {
+// The table asks for sort changes through the data source, which the diffable data source does not forward.
+private final class ItemsDataSource: NSTableViewDiffableDataSource<Int, String> {
+    var onSortDescriptorsChanged: (() -> Void)?
+
+    @objc func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
+        onSortDescriptorsChanged?()
+    }
+}
+
+class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate {
 
     private struct Column {
         let key: String
@@ -34,6 +43,9 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
     }()
 
     private let tableView = NSTableView()
+    private let scrollView = NSScrollView()
+    private var dataSource: ItemsDataSource?
+    private var contentTask: Task<Void, Never>?
     private let selection: ItemSelecting
     private let loader: ListLoading
 
@@ -44,7 +56,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
 
     // The rows come straight from the Realm results, so a large list is not copied.
     private var baseResults: Results<Item>?
-    private var results: Results<Item>?
+    private var itemsByID: [String: Item] = [:]
     private var isReloading = false
 
     init(selection: ItemSelecting, loader: ListLoading) {
@@ -73,10 +85,16 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
         tableView.allowsColumnReordering = false
         tableView.rowHeight = 20
         tableView.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
-        tableView.dataSource = self
         tableView.delegate = self
 
-        let scrollView = NSScrollView()
+        let dataSource = ItemsDataSource(tableView: tableView) { [weak self] tableView, tableColumn, _, id in
+            self?.makeCell(in: tableView, column: tableColumn, id: id) ?? NSView()
+        }
+        dataSource.onSortDescriptorsChanged = { [weak self] in
+            self?.sortDescriptorsChanged()
+        }
+        self.dataSource = dataSource
+
         scrollView.documentView = tableView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
@@ -161,57 +179,67 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
 
     func setContent(_ content: Results<Item>?) {
         baseResults = content
-        applySortDescriptor()
-
-        isReloading = true
-        tableView.reloadData()
-        if (results?.count ?? 0) > 0 {
-            tableView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
-        }
-        isReloading = false
-
-        // The table has no size yet when the first content arrives, so the scroll waits for the layout.
-        DispatchQueue.main.async { [weak self] in
-            self?.tableView.scrollRowToVisible(0)
-        }
-
-        publishSelection()
+        sortDescriptorsChanged()
     }
 
-    private func applySortDescriptor() {
-        guard let descriptor = tableView.sortDescriptors.first, let key = descriptor.key else {
-            results = baseResults
+    // The latest request wins, so a quick series of filter changes shows only the last one.
+    private func sortDescriptorsChanged() {
+        contentTask?.cancel()
+        contentTask = Task {
+            await showContent()
+        }
+    }
+
+    private func showContent() async {
+        var results = baseResults
+        if let descriptor = tableView.sortDescriptors.first, let key = descriptor.key {
+            results = results?.sorted(byKeyPath: key, ascending: descriptor.ascending)
+        }
+
+        var ids: [String] = []
+        var lookup: [String: Item] = [:]
+        if let results = results {
+            for (index, item) in results.enumerated() {
+                // A snapshot needs unique identifiers, and two rows of the list can share a key.
+                let id = lookup[item.pk] == nil ? item.pk : "\(item.pk)#\(index)"
+                ids.append(id)
+                lookup[id] = item
+            }
+        }
+        itemsByID = lookup
+
+        var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(ids)
+
+        isReloading = true
+        await dataSource?.show(snapshot, animated: false)
+        isReloading = false
+        guard !Task.isCancelled else {
             return
         }
-        results = baseResults?.sorted(byKeyPath: key, ascending: descriptor.ascending)
+
+        if !ids.isEmpty {
+            isReloading = true
+            tableView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+            isReloading = false
+            tableView.scrollRowToVisible(0)
+        }
+        publishSelection()
     }
 
     private func publishSelection() {
         let row = tableView.selectedRow
-        guard row >= 0, let results = results, row < results.count else {
+        guard row >= 0, let id = dataSource?.itemIdentifier(forRow: row), let item = itemsByID[id] else {
             return
         }
-        representedObject = results[row]
+        representedObject = item
     }
 
     var detailsViewController: DetailsViewController {
         let sc: NSSplitViewController = parent?.children[1] as! NSSplitViewController
         let vc: DetailsViewController = sc.children[0] as! DetailsViewController
         return vc
-    }
-
-    // MARK: - NSTableViewDataSource
-
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return results?.count ?? 0
-    }
-
-    func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
-        applySortDescriptor()
-        isReloading = true
-        tableView.reloadData()
-        isReloading = false
-        publishSelection()
     }
 
     // MARK: - NSTableViewDelegate
@@ -222,9 +250,9 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDataSour
         }
     }
 
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let tableColumn = tableColumn, let item = results?[row] else {
-            return nil
+    private func makeCell(in tableView: NSTableView, column tableColumn: NSTableColumn, id: String) -> NSView {
+        guard let item = itemsByID[id] else {
+            return NSView()
         }
         let cell = tableView.makeView(withIdentifier: tableColumn.identifier, owner: self) as? NSTableCellView ?? makeCell(identifier: tableColumn.identifier)
         cell.textField?.stringValue = text(for: item, key: tableColumn.identifier.rawValue)
