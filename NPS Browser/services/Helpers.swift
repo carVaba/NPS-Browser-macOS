@@ -109,23 +109,23 @@ class Helpers {
         switch (itemType.console) {
         case .psv:
             switch (itemType.fileType) {
-            case .game: return Defaults[.src_psv_games]
-            case .dlc: return Defaults[.src_psv_dlcs]
-            case .theme: return Defaults[.src_psv_themes]
-            case .compatPack: return Defaults[.src_compatPacks]
-            case .compatPatch: return Defaults[.src_compatPatch]
+            case .game: return Defaults[.sourcePSVGames]
+            case .dlc: return Defaults[.sourcePSVDLCs]
+            case .theme: return Defaults[.sourcePSVThemes]
+            case .compatPack: return Defaults[.sourceCompatPacks]
+            case .compatPatch: return Defaults[.sourceCompatPatch]
             default: break
             }
         case .ps3:
             switch (itemType.fileType) {
-            case .game: return Defaults[.src_ps3_games]
-            case .dlc: return Defaults[.src_ps3_dlcs]
-            case .theme: return Defaults[.src_ps3_themes]
-            case .avatar: return Defaults[.src_ps3_avatars]
+            case .game: return Defaults[.sourcePS3Games]
+            case .dlc: return Defaults[.sourcePS3DLCs]
+            case .theme: return Defaults[.sourcePS3Themes]
+            case .avatar: return Defaults[.sourcePS3Avatars]
             default: break
             }
-        case .psp: return Defaults[.src_psp_games]
-        case .psx: return Defaults[.src_psx_games]
+        case .psp: return Defaults[.sourcePSPGames]
+        case .psx: return Defaults[.sourcePSXGames]
         }
         
         return nil

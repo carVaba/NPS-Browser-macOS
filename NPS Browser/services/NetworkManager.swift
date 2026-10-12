@@ -74,14 +74,14 @@ class NetworkManager {
     }
 
     private func loadCompatPacks() async {
-        guard let cpackurl = Defaults[.src_compatPacks] else {
+        guard let cpackurl = Defaults[.sourceCompatPacks] else {
             Helpers().showAlert(messageText: "No URL set for Compat Packs.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat packs.")
             return
         }
 
-        guard let cpatchurl: URL = Defaults[.src_compatPatch] else {
+        guard let cpatchurl: URL = Defaults[.sourceCompatPatch] else {
             Helpers().showAlert(messageText: "No URL set for Compat Patches.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat patches")

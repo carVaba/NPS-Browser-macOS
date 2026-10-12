@@ -52,7 +52,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
         var str = "consoleType == %@ AND fileType == %@ AND region == %@ "
         let it = windowDelegate.itemType
         
-        if Defaults[.dsp_hide_invalid_url_items] {
+        if Defaults[.hidesInvalidURLItems] {
             str.append(" AND pkgDirectLink != 'MISSING'")
             
             switch( it.console ) {

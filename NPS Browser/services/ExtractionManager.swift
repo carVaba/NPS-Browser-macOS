@@ -49,7 +49,7 @@ class ExtractionManager {
     }
     
     func unzipPPK() async {
-        var filepath = Defaults[.dl_library_folder]
+        var filepath = Defaults[.libraryFolder]
         let rpf = makeRepatchFolder(filepath: filepath!)
         filepath = rpf.appendingPathComponent("\(item.titleId!)")
         
@@ -90,7 +90,7 @@ class ExtractionManager {
         setStatus("Extracting...")
         
         guard let pkg2zip = Bundle.main.url(forResource: "pkg2zip", withExtension: nil),
-              let consoleFolder = Defaults[.dl_library_folder]?.appendingPathComponent(item.consoleType ?? "") else {
+              let consoleFolder = Defaults[.libraryFolder]?.appendingPathComponent(item.consoleType ?? "") else {
             setStatus("Extraction failed")
             item.makeRemovable()
             return
@@ -133,11 +133,11 @@ class ExtractionManager {
         if (isPS3) {
             return false
         }
-        return Defaults[.xt_extract_after_downloading]
+        return Defaults[.extractsAfterDownloading]
     }
     
     private func cleanup() {
-        if (!(Defaults[.xt_keep_pkg])) { // false
+        if (!(Defaults[.keepsPackage])) { // false
             let pkg_path = item.destinationURL
             do {
                 try FileManager.default.removeItem(at: pkg_path!)
@@ -151,17 +151,17 @@ class ExtractionManager {
         // pkg2zip args: [zip (nothing) or not (-x)] [.pkg path] [zRIF string]
         var arguments: [String] = []
         
-        if (!(Defaults[.xt_save_as_zip])) { // == false
+        if (!(Defaults[.savesAsZip])) { // == false
             arguments.append("-x")
         }
         
-        if (item.consoleType! == "PSP" && item.fileType! == "Game" && Defaults[.xt_compress_psp_iso]) { // == true
-            arguments.append("-c\(Defaults[.xt_compression_factor])")
+        if (item.consoleType! == "PSP" && item.fileType! == "Game" && Defaults[.compressesPSPISO]) { // == true
+            arguments.append("-c\(Defaults[.compressionFactor])")
         }
         
         arguments.append((item.destinationURL?.path)!)
         
-        if (item.zrif != nil && Defaults[.xt_create_license]) { // == true
+        if (item.zrif != nil && Defaults[.createsLicense]) { // == true
             arguments.append(item.zrif!)
         }
         

@@ -13,7 +13,7 @@ import CryptoKit
 class DownloadManager {
     
     var downloadItems: [DownloadItem] = []
-    private let slots = DownloadSlots(limit: Defaults[.dl_concurrent_downloads])
+    private let slots = DownloadSlots(limit: Defaults[.concurrentDownloads])
     
     init() {
         restoreDownloadList()
@@ -22,7 +22,7 @@ class DownloadManager {
     func makeDestination(for item: DownloadItem) -> FileDownload.Destination {
         let fallbackName = item.downloadURL?.lastPathComponent ?? "download.pkg"
         let consoleFolder = item.consoleType ?? ""
-        let libraryFolder: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
+        let libraryFolder: URL = Defaults[.libraryFolder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
 
         return { suggestedFilename in
             // .pkg filename
@@ -35,7 +35,7 @@ class DownloadManager {
     }
     
     func createConsoleFolder(for item: DownloadItem) {
-        let filepath = Defaults[.dl_library_folder]!
+        let filepath = Defaults[.libraryFolder]!
         let console = item.consoleType
 
         if (try? Folder(path: filepath.path).createSubfolderIfNeeded(withName: console!)) != nil {

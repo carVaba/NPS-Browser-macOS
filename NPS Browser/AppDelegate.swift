@@ -46,12 +46,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func setupDownloadsDirectory() {
-        var dlFolder: URL? = Defaults[.dl_library_location]
+        var dlFolder: URL? = Defaults[.libraryLocation]
         
         
 //        if (try! !dlFolder.checkResourceIsReachable()) {
 //            dlFolder =
-//            try! Defaults[.dl_library_location] = dlFolder
+//            try! Defaults[.libraryLocation] = dlFolder
 //        }
         
         let dlDirName = "NPS Downloads"

@@ -13,7 +13,7 @@ class DownloadListItemCellView: NSTableCellView {
     @IBOutlet weak var btnAction: NSButton!
     @IBOutlet weak var btnCancel: NSButton!
     var item: DownloadItem?
-    var dlLoc = Defaults[.dl_library_folder]
+    var dlLoc = Defaults[.libraryFolder]
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -60,7 +60,7 @@ class DownloadListItemCellView: NSTableCellView {
     }
     
     func viewFile() {
-        if Defaults[.xt_extract_after_downloading] {
+        if Defaults[.extractsAfterDownloading] {
             let ct:ConsoleType = ConsoleType(rawValue: item!.consoleType!)!
             let ft:FileType = FileType(rawValue: item!.fileType!)!
             
