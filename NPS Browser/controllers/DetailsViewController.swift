@@ -250,13 +250,8 @@ class DetailsViewController: NSViewController {
                 chkDLUpdate.isHidden = false
                 chkDLCompatPack.isHidden = false
                 
-                try! RealmStorageContext().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@", titleId!)) { result in
-                    if (result.isEmpty) {
-                        chkDLCompatPack.isEnabled = false
-                    } else {
-                        chkDLCompatPack.isEnabled = true
-                    }
-                }
+                let packs = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@", titleId!))
+                chkDLCompatPack.isEnabled = !packs.isEmpty
             default:
                 chkDLCompatPack.isHidden = true
                 chkDLCompatPack.isEnabled = false

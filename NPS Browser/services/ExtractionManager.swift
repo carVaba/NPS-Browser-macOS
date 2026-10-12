@@ -170,35 +170,6 @@ class ExtractionManager {
         return arguments
     }
     
-//    private func unpackagePS3() {
-//        setStatus("Extracting...")
-//
-//        let pkgripPath = Bundle.main.resourcePath! + "/pkgrip"
-//        let task = Process()
-//        let pipe = Pipe()
-//
-//        task.currentDirectoryURL = userSettings?.download.download_location
-//        task.executableURL = URL(fileURLWithPath: pkgripPath)
-//        task.arguments = ["-s", (item.destinationURL?.path)!]
-//        task.standardOutput = pipe
-//        task.terminationHandler = { task in
-//            DispatchQueue.main.async {
-//                self.setStatus("Extraction Complete")
-//                self.item.makeViewable()
-//                notifications.showNotification(title: self.item.name!, subtitle: self.item.status!)
-//            }
-//        }
-//
-//        do {
-//            try task.run()
-//        } catch let error as NSError {
-//            debugPrint(error)
-//        }
-//
-//        task.waitUntilExit()
-//
-//        cleanup()
-//    }
     
     private func setStatus(_ status: String) {
         item.status = status

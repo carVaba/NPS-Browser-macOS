@@ -24,7 +24,7 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
         fatalError("DownloadViewController is created in code.")
     }
 
-    private var listObserver: NSObjectProtocol?
+    private var listChanges: Task<Void, Never>?
 
     override func loadView() {
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("download"))
@@ -73,17 +73,17 @@ class DownloadViewController: NSViewController, NSTableViewDataSource, NSTableVi
         super.viewDidLoad()
         updateView()
 
-        listObserver = NotificationCenter.default.addObserver(forName: .downloadListChanged, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.updateView()
+        listChanges = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: .downloadListChanged) {
+                guard let self = self else { return }
+                self.updateView()
             }
         }
     }
 
-    deinit {
-        if let listObserver = listObserver {
-            NotificationCenter.default.removeObserver(listObserver)
-        }
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+        listChanges?.cancel()
     }
 
     @objc func clearCompleted(_ sender: Any) {

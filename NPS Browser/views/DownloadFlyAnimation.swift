@@ -21,17 +21,16 @@ enum DownloadFlyAnimation {
         window.addChildWindow(flyer, ordered: .above)
         flyer.orderFront(nil)
 
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = duration
-            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-            flyer.animator().setFrame(end, display: true)
-            flyer.animator().alphaValue = 0.3
-        }, completionHandler: {
-            MainActor.assumeIsolated {
-                window.removeChildWindow(flyer)
-                flyer.orderOut(nil)
+        Task {
+            await NSAnimationContext.runAnimationGroup { context in
+                context.duration = duration
+                context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                flyer.animator().setFrame(end, display: true)
+                flyer.animator().alphaValue = 0.3
             }
-        })
+            window.removeChildWindow(flyer)
+            flyer.orderOut(nil)
+        }
     }
 
     private static func screenRect(of view: NSView, in window: NSWindow) -> NSRect {
