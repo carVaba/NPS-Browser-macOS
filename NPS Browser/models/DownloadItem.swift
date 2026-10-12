@@ -1,5 +1,5 @@
 //
-//  DLItem.swift
+//  DownloadItem.swift
 //  NPS Browser
 //
 //  Created by JK3Y on 5/19/18.
@@ -9,16 +9,16 @@
 import AppKit
 
 struct DownloadList: Codable {
-    var items: [DLItem]
-    init(items: [DLItem]) {
+    var items: [DownloadItem]
+    init(items: [DownloadItem]) {
         self.items = items
     }
 }
 
-class DLItem: NSObject, Codable {
+class DownloadItem: NSObject, Codable {
     @objc dynamic var titleId          : String?
     @objc dynamic var name              : String?
-    @objc dynamic var downloadUrl     : URL?
+    @objc dynamic var downloadURL     : URL?
     @objc dynamic var progress          : Double = 0.0
     @objc dynamic var zrif              : String?
     var sha256                          : String?
@@ -37,8 +37,8 @@ class DLItem: NSObject, Codable {
     @objc dynamic var isResumable       : Bool = false
     @objc dynamic var cpackPath         : URL?
     @objc dynamic var cpatchPath        : URL?
-    @objc dynamic var doNext            : DLItem? = nil
-    @objc dynamic var parentItem        : DLItem? = nil
+    @objc dynamic var doNext            : DownloadItem? = nil
+    @objc dynamic var parentItem        : DownloadItem? = nil
     @objc dynamic var consoleType       : String?
     @objc dynamic var fileType          : String?
     @objc dynamic var actionImage: NSImage?
@@ -46,7 +46,7 @@ class DLItem: NSObject, Codable {
     enum CodingKeys: String, CodingKey {
         case titleId
         case name
-        case downloadUrl
+        case downloadURL = "downloadUrl"
         case progress
         case zrif
         case sha256

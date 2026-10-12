@@ -12,12 +12,12 @@ import Zip
 
 @MainActor
 class ExtractionManager {
-    private var item: DLItem
+    private var item: DownloadItem
 //    private let userSettings = SettingsManager().getSettings()
     private var downloadManager: DownloadManager
     private var isPS3: Bool = false
     
-    init(item: DLItem, downloadManager: DownloadManager) {
+    init(item: DownloadItem, downloadManager: DownloadManager) {
         self.item = item
         Zip.addCustomFileExtension("ppk")
 

@@ -58,13 +58,13 @@ class Helpers {
         return cell.objectValue
     }
     
-    func makeDLItem(from item: Item, downloadUrl: URL, fileType: FileType) -> DLItem {
-        let obj = DLItem()
+    func makeDownloadItem(from item: Item, downloadURL: URL, fileType: FileType) -> DownloadItem {
+        let obj = DownloadItem()
         let _: ConsoleType = ConsoleType.init(rawValue: item.consoleType!)!
 
         obj.titleId        = item.titleId
         obj.name            = "\(fileType.rawValue) - \(item.name!)"
-        obj.downloadUrl   = downloadUrl
+        obj.downloadURL   = downloadURL
         obj.zrif = item.zrif
         if fileType == .Game {
             obj.sha256 = item.sha256

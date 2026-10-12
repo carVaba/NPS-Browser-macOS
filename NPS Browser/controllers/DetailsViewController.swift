@@ -41,7 +41,7 @@ class DetailsViewController: NSViewController {
         let artwork = boxartViewController
         DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart)
 
-        var baseDLItem: DLItem? = nil
+        var baseDownloadItem: DownloadItem? = nil
 
         if (chkDLGame.state == .on) {
             if let link = obj.pkgDirectLink, let url = URL(string: link) {
@@ -73,17 +73,17 @@ class DetailsViewController: NSViewController {
                     
                     if let cpacko: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPack'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpacko.downloadUrl)!)
-                        baseDLItem = Helpers().makeDLItem(from: obj, downloadUrl: url!, fileType: .CPack)
+                        baseDownloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .CPack)
                     }
                     
                     if let cpatcho: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPatch'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpatcho.downloadUrl)!)
-                        let item = Helpers().makeDLItem(from: obj, downloadUrl: url!, fileType: .CPatch)
-                        baseDLItem?.doNext = item
-                        item.parentItem = baseDLItem
+                        let item = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .CPatch)
+                        baseDownloadItem?.doNext = item
+                        item.parentItem = baseDownloadItem
                     }
                     
-                    Helpers().sharedAppDelegate.downloadManager.enqueue(baseDLItem!)
+                    Helpers().sharedAppDelegate.downloadManager.enqueue(baseDownloadItem!)
                 default: break
                 }
             default: break
@@ -178,8 +178,8 @@ class DetailsViewController: NSViewController {
 
     func sendDLData(url: URL, fileType: FileType) {
         let obj = selectedItem
-        let dlItem = Helpers().makeDLItem(from: obj, downloadUrl: url, fileType: fileType)
-        Helpers().sharedAppDelegate.downloadManager.enqueue(dlItem)
+        let downloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url, fileType: fileType)
+        Helpers().sharedAppDelegate.downloadManager.enqueue(downloadItem)
     }
     
     var selectedItem: Item {

@@ -31,7 +31,7 @@ class GameArtworkViewController: NSViewController {
     }
     
     func loadImage() {
-        let api = PSNStoreApi(item: representedObject as! Item)
+        let api = PSNStoreAPI(item: representedObject as! Item)
         Task {
             setImage(image: await api.fetchImage())
         }

@@ -12,15 +12,15 @@ import CryptoKit
 @MainActor
 class DownloadManager {
     
-    var downloadItems: [DLItem] = []
+    var downloadItems: [DownloadItem] = []
     private let slots = DownloadSlots(limit: Defaults[.dl_concurrent_downloads])
     
     init() {
         restoreDownloadList()
     }
     
-    func makeDestination(for item: DLItem) -> FileDownload.Destination {
-        let fallbackName = item.downloadUrl?.lastPathComponent ?? "download.pkg"
+    func makeDestination(for item: DownloadItem) -> FileDownload.Destination {
+        let fallbackName = item.downloadURL?.lastPathComponent ?? "download.pkg"
         let consoleFolder = item.consoleType ?? ""
         let libraryFolder: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
 
@@ -34,7 +34,7 @@ class DownloadManager {
         }
     }
     
-    func createConsoleFolder(for item: DLItem) {
+    func createConsoleFolder(for item: DownloadItem) {
         let filepath = Defaults[.dl_library_folder]!
         let console = item.consoleType
 
@@ -46,8 +46,8 @@ class DownloadManager {
         }
     }
     
-    func enqueue(_ item: DLItem) {
-        guard let url = item.downloadUrl else {
+    func enqueue(_ item: DownloadItem) {
+        guard let url = item.downloadURL else {
             return
         }
 
@@ -68,12 +68,12 @@ class DownloadManager {
         start(item: item, download: download)
     }
     
-    func resume(_ item: DLItem) {
+    func resume(_ item: DownloadItem) {
         let destination = item.destination ?? makeDestination(for: item)
         let download: FileDownload
         if let resumeData = item.resumeData {
             download = FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
-        } else if let url = item.downloadUrl {
+        } else if let url = item.downloadURL {
             download = FileDownload(url: url, waitsForConnectivity: true, destination: destination)
         } else {
             return
@@ -84,7 +84,7 @@ class DownloadManager {
         start(item: item, download: download)
     }
 
-    func stop(_ item: DLItem) {
+    func stop(_ item: DownloadItem) {
         item.isUserStopped = true
         item.status = "Stopped"
         item.makeResumable()
@@ -98,7 +98,7 @@ class DownloadManager {
     }
 
     // Stops the download and removes it from the list. The temporary data is deleted by the system.
-    func cancel(_ item: DLItem) {
+    func cancel(_ item: DownloadItem) {
         item.isUserStopped = true
         item.isCancelled = true
 
@@ -114,7 +114,7 @@ class DownloadManager {
         downloadItems.removeAll { $0.isRemovable }
     }
     
-    func moveToCompleted(_ item: DLItem) {
+    func moveToCompleted(_ item: DownloadItem) {
         guard let index = downloadItems.firstIndex(of: item) else {
             return
         }
@@ -124,7 +124,7 @@ class DownloadManager {
     
     // Stops the running downloads and keeps their resume data, so the next start continues the files.
     func stopAndStoreDownloadList() async {
-        var running: [(item: DLItem, download: FileDownload)] = []
+        var running: [(item: DownloadItem, download: FileDownload)] = []
 
         for item in downloadItems {
             
@@ -175,7 +175,7 @@ class DownloadManager {
         }
     }
 
-    private func start(item: DLItem, download: FileDownload) {
+    private func start(item: DownloadItem, download: FileDownload) {
         item.isUserStopped = false
 
         Task {
@@ -214,7 +214,7 @@ class DownloadManager {
     private static let maxAttempts = 3
 
     // Runs the download and tries again after a network error. A retry continues from the resume data.
-    private func transfer(item: DLItem, firstAttempt: FileDownload) async -> Result<URL, Error> {
+    private func transfer(item: DownloadItem, firstAttempt: FileDownload) async -> Result<URL, Error> {
         var attempt = firstAttempt
         var resumeFromURLUsed = false
 
@@ -254,12 +254,12 @@ class DownloadManager {
         return .failure(URLError(.unknown))
     }
 
-    private func makeRetry(for item: DLItem, after error: Error) -> FileDownload? {
+    private func makeRetry(for item: DownloadItem, after error: Error) -> FileDownload? {
         let destination = item.destination ?? makeDestination(for: item)
         if let resumeData = (error as? DownloadFailure)?.resumeData {
             return FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
         }
-        guard let url = item.downloadUrl else {
+        guard let url = item.downloadURL else {
             return nil
         }
         return FileDownload(url: url, waitsForConnectivity: true, destination: destination)
@@ -288,7 +288,7 @@ class DownloadManager {
         }
     }
 
-    private func handleFailure(_ error: Error, of item: DLItem) {
+    private func handleFailure(_ error: Error, of item: DownloadItem) {
         guard let failure = error as? DownloadFailure else {
             item.status = "Failed! \(error.localizedDescription)"
             log.error(error)
@@ -314,7 +314,7 @@ class DownloadManager {
     }
 
     // A wrong checksum only warns, because the TSV hashes are sometimes outdated.
-    private func verifyChecksum(of item: DLItem) async {
+    private func verifyChecksum(of item: DownloadItem) async {
         guard let expected = item.sha256?.lowercased(), expected.count == 64, let fileURL = item.destinationURL else {
             return
         }

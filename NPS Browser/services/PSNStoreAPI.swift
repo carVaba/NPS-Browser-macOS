@@ -1,5 +1,5 @@
 //
-//  PSNStoreApi.swift
+//  PSNStoreAPI.swift
 //  NPS Browser
 //
 //  Created by JK3Y on 8/3/18.
@@ -10,7 +10,7 @@ import Cocoa
 
 // Realm objects belong to the main thread, so the class stays on the main actor.
 @MainActor
-class PSNStoreApi {
+class PSNStoreAPI {
     var item: Item
     var consoleType: ConsoleType
     

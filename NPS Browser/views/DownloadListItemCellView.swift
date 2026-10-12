@@ -12,7 +12,7 @@ class DownloadListItemCellView: NSTableCellView {
 
     @IBOutlet weak var btnAction: NSButton!
     @IBOutlet weak var btnCancel: NSButton!
-    var item: DLItem?
+    var item: DownloadItem?
     var dlLoc = Defaults[.dl_library_folder]
 
     override func awakeFromNib() {
@@ -23,7 +23,7 @@ class DownloadListItemCellView: NSTableCellView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         // Drawing code here.
-        item = objectValue as? DLItem
+        item = objectValue as? DownloadItem
         
         changeImage()
     }
