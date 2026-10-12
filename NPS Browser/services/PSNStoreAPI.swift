@@ -12,16 +12,15 @@ import Cocoa
 @MainActor
 class PSNStoreAPI {
     var item: Item
-    var consoleType: ConsoleType
     
     init(item: Item) {
         self.item = item
-        self.consoleType = ConsoleType(rawValue: item.consoleType!)!
     }
     
-    private var imageURL: URL {
-        let region = item.region!
-        let contentId = item.contentId!
+    private var imageURL: URL? {
+        guard let region = item.region, let contentId = item.contentId else {
+            return nil
+        }
         var language = "en"
         
         var countryCode: String = region
@@ -36,17 +35,19 @@ class PSNStoreAPI {
         }
         
         let psnUrl = "https://store.playstation.com/store/api/chihiro/00_09_000/container/\(countryCode)/\(language)/19/\(contentId)/1534563384000/image?w=248&h=248"
-        return URL(string: psnUrl)!
+        return URL(string: psnUrl)
     }
     
     func fetchImage() async -> NSImage {
-        do {
-            let data = try await HTTPClient.data(from: imageURL)
-            if let image = NSImage(data: data) {
-                return image
+        if let imageURL = imageURL {
+            do {
+                let data = try await HTTPClient.data(from: imageURL)
+                if let image = NSImage(data: data) {
+                    return image
+                }
+            } catch {
+                log.debug(error)
             }
-        } catch {
-            log.debug(error)
         }
 
         log.info("No image found for \(item.titleId ?? "") - \(item.name ?? "")")

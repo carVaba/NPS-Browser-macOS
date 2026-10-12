@@ -88,14 +88,12 @@ actor FileDownload {
     }
 
     private func makeEvents() -> AsyncThrowingStream<DownloadEvent, Error> {
-        var continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation!
-        let events = AsyncThrowingStream<DownloadEvent, Error> { continuation = $0 }
-
         let configuration = URLSessionConfiguration.default
         configuration.waitsForConnectivity = waitsForConnectivity
 
+        let delegate = DownloadDelegate(destination: destination)
         let session = URLSession(configuration: configuration,
-                                 delegate: DownloadDelegate(destination: destination, continuation: continuation),
+                                 delegate: delegate,
                                  delegateQueue: nil)
         let downloadTask: URLSessionDownloadTask
         switch source {
@@ -106,8 +104,12 @@ actor FileDownload {
         }
         task = downloadTask
 
-        continuation.onTermination = { _ in downloadTask.cancel() }
-        downloadTask.resume()
+        // The closure runs at once, so the delegate has its continuation before the task starts.
+        let events = AsyncThrowingStream<DownloadEvent, Error> { continuation in
+            delegate.continuation = continuation
+            continuation.onTermination = { _ in downloadTask.cancel() }
+            downloadTask.resume()
+        }
         // Lets the session release its delegate when the task ends.
         session.finishTasksAndInvalidate()
 
@@ -117,23 +119,22 @@ actor FileDownload {
 
 private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
     private let destination: FileDownload.Destination
-    private let continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation
+    var continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation?
     private var movedURL: URL?
     private var failure: Error?
 
-    init(destination: @escaping FileDownload.Destination, continuation: AsyncThrowingStream<DownloadEvent, Error>.Continuation) {
+    init(destination: @escaping FileDownload.Destination) {
         self.destination = destination
-        self.continuation = continuation
     }
 
     func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
-        continuation.yield(.waitingForConnectivity)
+        continuation?.yield(.waitingForConnectivity)
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,
                     totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         guard totalBytesExpectedToWrite > 0 else { return }
-        continuation.yield(.progress(DownloadProgress(fraction: Double(totalBytesWritten) / Double(totalBytesExpectedToWrite),
+        continuation?.yield(.progress(DownloadProgress(fraction: Double(totalBytesWritten) / Double(totalBytesExpectedToWrite),
                                                       bytesWritten: totalBytesWritten,
                                                       bytesExpected: totalBytesExpectedToWrite)))
     }
@@ -162,14 +163,14 @@ private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unc
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
             let resumeData = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data
-            continuation.finish(throwing: DownloadFailure(underlying: error, resumeData: resumeData))
+            continuation?.finish(throwing: DownloadFailure(underlying: error, resumeData: resumeData))
         } else if let failure = failure {
-            continuation.finish(throwing: DownloadFailure(underlying: failure, resumeData: nil))
+            continuation?.finish(throwing: DownloadFailure(underlying: failure, resumeData: nil))
         } else if let movedURL = movedURL {
-            continuation.yield(.finished(movedURL))
-            continuation.finish()
+            continuation?.yield(.finished(movedURL))
+            continuation?.finish()
         } else {
-            continuation.finish()
+            continuation?.finish()
         }
     }
 }

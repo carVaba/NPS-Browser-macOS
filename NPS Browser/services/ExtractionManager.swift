@@ -43,42 +43,49 @@ class ExtractionManager {
         }
     }
     
-    func makeRepatchFolder(filepath: URL) -> URL {
-        let fp = filepath.appendingPathComponent(item.consoleType!)
-        try! Folder(path: fp.path).createSubfolderIfNeeded(withName: "rePatch")
-        
-        return fp.appendingPathComponent("rePatch")
-    }
-    
-    func unzipPPK() async {
-        var filepath = Defaults[.libraryFolder]
-        let rpf = makeRepatchFolder(filepath: filepath!)
-        filepath = rpf.appendingPathComponent("\(item.titleId!)")
-        
-        if (item.fileType == "CPack") {
-            do {
-                try await Self.unzip(item.destinationURL!, to: filepath!)
-                completeDownload(status: "Extraction Complete")
-            }
-            catch {
-                log.warning("pack not unzipped")
-            }
+    private func makeRepatchFolder(in library: URL) -> URL? {
+        guard let console = item.consoleType else {
+            return nil
         }
-        
-        if (item.fileType == "CPatch") {
-            do {
-                if (item.cpackPath != nil) {
-                    try await Self.unzip(item.cpackPath!, to: filepath!)
-                    item.parentItem?.status = "Extraction Complete"
-                    item.parentItem?.makeViewable()
-                    notifications.showNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
+        let folder = library.appendingPathComponent(console).appendingPathComponent("rePatch")
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            return folder
+        } catch {
+            log.error(error)
+            return nil
+        }
+    }
+
+    private func failExtraction() {
+        setStatus("Extraction failed")
+        item.makeRemovable()
+    }
+
+    func unzipPPK() async {
+        guard let library = Defaults[.libraryFolder],
+              let titleID = item.titleId,
+              let archive = item.destinationURL,
+              let repatchFolder = makeRepatchFolder(in: library) else {
+            failExtraction()
+            return
+        }
+        let target = repatchFolder.appendingPathComponent(titleID)
+
+        do {
+            if item.fileType == "CPatch", let pack = item.cpackPath {
+                try await Self.unzip(pack, to: target)
+                if let parent = item.parentItem {
+                    parent.status = "Extraction Complete"
+                    parent.makeViewable()
+                    notifications.showNotification(title: parent.name ?? "", subtitle: parent.status ?? "")
                 }
-                try await Self.unzip(item.destinationURL!, to: filepath!)
-                completeDownload(status: "Extraction Complete")
             }
-            catch {
-                log.warning("patch not unzipped")
-            }
+            try await Self.unzip(archive, to: target)
+            completeDownload(status: "Extraction Complete")
+        } catch {
+            log.warning("compat file not unzipped: \(error)")
+            failExtraction()
         }
     }
     
@@ -92,6 +99,7 @@ class ExtractionManager {
         setStatus("Extracting...")
         
         guard let pkg2zip = Bundle.main.url(forResource: "pkg2zip", withExtension: nil),
+              let package = item.destinationURL,
               let consoleFolder = Defaults[.libraryFolder]?.appendingPathComponent(item.consoleType ?? "") else {
             setStatus("Extraction failed")
             item.makeRemovable()
@@ -99,7 +107,7 @@ class ExtractionManager {
         }
 
         do {
-            let status = try await ProcessRunner.run(executable: pkg2zip, arguments: pkg2zipArguments, currentDirectory: consoleFolder)
+            let status = try await ProcessRunner.run(executable: pkg2zip, arguments: pkg2zipArguments(for: package), currentDirectory: consoleFolder)
             if (status == 0) {
                 setStatus("Extraction Complete")
                 item.makeViewable()
@@ -125,7 +133,7 @@ class ExtractionManager {
     private func completeDownload(status: String) {
         setStatus(status)
         self.item.makeViewable()
-        notifications.showNotification(title: self.item.name!, subtitle: self.item.status!)
+        notifications.showNotification(title: item.name ?? "", subtitle: item.status ?? "")
         
         downloadManager.moveToCompleted(self.item)
         return
@@ -139,32 +147,32 @@ class ExtractionManager {
     }
     
     private func cleanup() {
-        if (!(Defaults[.keepsPackage])) { // false
-            let pkg_path = item.destinationURL
-            do {
-                try FileManager.default.removeItem(at: pkg_path!)
-            } catch let error as NSError {
-                debugPrint(error)
-            }
+        guard !Defaults[.keepsPackage], let package = item.destinationURL else {
+            return
+        }
+        do {
+            try FileManager.default.removeItem(at: package)
+        } catch {
+            log.error(error)
         }
     }
     
-    private var pkg2zipArguments: [String] {
-        // pkg2zip args: [zip (nothing) or not (-x)] [.pkg path] [zRIF string]
+    // pkg2zip arguments: [zip (nothing) or not (-x)] [.pkg path] [zRIF string]
+    private func pkg2zipArguments(for package: URL) -> [String] {
         var arguments: [String] = []
         
-        if (!(Defaults[.savesAsZip])) { // == false
+        if !Defaults[.savesAsZip] {
             arguments.append("-x")
         }
         
-        if (item.consoleType! == "PSP" && item.fileType! == "Game" && Defaults[.compressesPSPISO]) { // == true
+        if item.consoleType == "PSP" && item.fileType == "Game" && Defaults[.compressesPSPISO] {
             arguments.append("-c\(Defaults[.compressionFactor])")
         }
         
-        arguments.append((item.destinationURL?.path)!)
+        arguments.append(package.path)
         
-        if (item.zrif != nil && Defaults[.createsLicense]) { // == true
-            arguments.append(item.zrif!)
+        if let zrif = item.zrif, Defaults[.createsLicense] {
+            arguments.append(zrif)
         }
         
         return arguments

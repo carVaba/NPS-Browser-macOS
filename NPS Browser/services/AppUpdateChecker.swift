@@ -45,10 +45,9 @@ class AppUpdateChecker {
 
         let destination: FileDownload.Destination = { suggestedFilename in
             // .pkg filename
-            var url: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
-            url.appendPathComponent(suggestedFilename ?? "NPS-Browser-update.pkg")
-
-            return url
+            let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+                ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
+            return downloads.appendingPathComponent(suggestedFilename ?? "NPS-Browser-update.pkg")
         }
 
         do {

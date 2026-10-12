@@ -18,12 +18,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     private let folders = DefaultsDownloadFolderLocator()
     private let downloadsDirectory = DefaultsDownloadsDirectory()
     lazy var downloadManager = DownloadManager(alerts: alerts, notifications: self, directory: downloadsDirectory)
-    private(set) var windowController: WindowController!
+    private(set) lazy var windowController = WindowController(downloads: downloadManager, folders: folders,
+                                                            alerts: alerts, sources: sources)
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         downloadsDirectory.prepare()
 
-        windowController = WindowController(downloads: downloadManager, folders: folders, alerts: alerts, sources: sources)
         NSApp.mainMenu = MainMenu.make(appDelegate: self, windowController: windowController)
         windowController.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)

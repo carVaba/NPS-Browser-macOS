@@ -10,6 +10,7 @@
 		0CE9CC037EF5EEF4E3F4151F /* InvalidItemFiltering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4155E747792AF0BB83755FDA /* InvalidItemFiltering.swift */; };
 		0ED2F628FF680EC6264EAAA8 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03398F71359C9F6C2B9FCAFA /* Log.swift */; };
 		1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */; };
+		20DA9B94A286FE507C6A991C /* FileManager+Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F453CB1D32A38FEB929222 /* FileManager+Folder.swift */; };
 		2D20AFE6A9ED9C94D28D6360 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD507C48DF2E0614C5DF5B78 /* Localizable.strings */; };
 		2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0099598B9832558EC7024AB4 /* AppKitExtensions.swift */; };
 		2F3954CEA79163597269A2D9 /* ItemProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2196C0AD61C81A181047507D /* ItemProviding.swift */; };
@@ -18,7 +19,6 @@
 		5139DF87209F6DE9004F65F9 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF86209F6DE9004F65F9 /* WindowController.swift */; };
 		5139DF89209FC6C6004F65F9 /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF88209FC6C6004F65F9 /* DetailsViewController.swift */; };
 		515B77B520AF794500C7B07D /* ToolbarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515B77B420AF794500C7B07D /* ToolbarDelegate.swift */; };
-		515F58F522C663D2003370DA /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515F58F422C663D2003370DA /* Files.swift */; };
 		516019E82131D65300BD7B0C /* DBMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516019E72131D65300BD7B0C /* DBMigration.swift */; };
 		5167430520AFE098003AFC4D /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5167430420AFE098003AFC4D /* DownloadManager.swift */; };
 		516A1B7720CAE276004D6AE5 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 516A1B7620CAE275004D6AE5 /* CHANGELOG.md */; };
@@ -79,7 +79,6 @@
 		5139DF86209F6DE9004F65F9 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		5139DF88209FC6C6004F65F9 /* DetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
 		515B77B420AF794500C7B07D /* ToolbarDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarDelegate.swift; sourceTree = "<group>"; };
-		515F58F422C663D2003370DA /* Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Files.swift; sourceTree = "<group>"; };
 		516019E72131D65300BD7B0C /* DBMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMigration.swift; sourceTree = "<group>"; };
 		5167430420AFE098003AFC4D /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		516A1B7620CAE275004D6AE5 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
@@ -122,6 +121,7 @@
 		B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadFlyAnimation.swift; sourceTree = "<group>"; };
 		BD98D76D53F92F31193C9B8A /* ProgressBarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
 		C1D990EB3C952DB06161BC1F /* MainToolbar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainToolbar.swift; sourceTree = "<group>"; };
+		C2F453CB1D32A38FEB929222 /* FileManager+Folder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "FileManager+Folder.swift"; sourceTree = "<group>"; };
 		D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSTableViewDiffableDataSource+Async.swift"; sourceTree = "<group>"; };
 		E114A2ABF1F18FF061500D25 /* zh-Hans */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		F5472C76A782FF1648B21CF2 /* HTTPClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
@@ -180,6 +180,7 @@
 			children = (
 				0099598B9832558EC7024AB4 /* AppKitExtensions.swift */,
 				D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */,
+				C2F453CB1D32A38FEB929222 /* FileManager+Folder.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -275,7 +276,6 @@
 		51EBE81D2094E094005D44DC /* NPS Browser */ = {
 			isa = PBXGroup;
 			children = (
-				515F58F422C663D2003370DA /* Files.swift */,
 				51E82B0C210CEBAC00E68A31 /* vitaupdatelinks */,
 				5177A78520C33C0E002F81F9 /* pkg2zip */,
 				51A767A120A6992500052F53 /* controllers */,
@@ -414,7 +414,6 @@
 				5192CE8C211F1AAE004A2E90 /* Bookmark.swift in Sources */,
 				51EBE81F2094E094005D44DC /* AppDelegate.swift in Sources */,
 				51B1A315209511A6009C799C /* PreferencesViewController.swift in Sources */,
-				515F58F522C663D2003370DA /* Files.swift in Sources */,
 				5192CE7F211E18EA004A2E90 /* NetworkManager.swift in Sources */,
 				519F0D7320CC852C00332987 /* BookmarkListItemCellView.swift in Sources */,
 				5182C57F21140757003A5527 /* ItemType.swift in Sources */,
@@ -437,6 +436,7 @@
 				4A9FF1FE076ADFA34B2A2B8C /* ItemListViewModel.swift in Sources */,
 				D1706B58FD3AEB380A99292F /* DownloadFolderLocating.swift in Sources */,
 				61034CDED1E1D53B57893674 /* ProgressBarView.swift in Sources */,
+				20DA9B94A286FE507C6A991C /* FileManager+Folder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

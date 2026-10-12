@@ -190,9 +190,9 @@ class NetworkManager: ListLoading, UpdateLinkFetching {
 
         if (status == 0) {
             debugPrint("Update URL Fetch SUCCESS!")
-            return output.first!
+            return output.first ?? ""
         } else {
-            return error.first!
+            return error.first ?? ""
         }
     }
 

@@ -28,7 +28,9 @@ class DownloadManager: DownloadQueuing {
     func makeDestination(for item: DownloadItem) -> FileDownload.Destination {
         let fallbackName = item.downloadURL?.lastPathComponent ?? "download.pkg"
         let consoleFolder = item.consoleType ?? ""
-        let libraryFolder: URL = Defaults[.libraryFolder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
+        let libraryFolder: URL = Defaults[.libraryFolder]
+            ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory())
 
         return { suggestedFilename in
             // .pkg filename
@@ -41,14 +43,19 @@ class DownloadManager: DownloadQueuing {
     }
     
     func createConsoleFolder(for item: DownloadItem) {
-        let filepath = Defaults[.libraryFolder]!
-        let console = item.consoleType
-
-        if (try? Folder(path: filepath.path).createSubfolderIfNeeded(withName: console!)) != nil {
+        guard let console = item.consoleType else {
             return
-        } else {
-            directory.prepare()
-            createConsoleFolder(for: item)
+        }
+        let fileManager = FileManager.default
+
+        if let library = Defaults[.libraryFolder], fileManager.createFolderIfNeeded(at: library.appendingPathComponent(console)) {
+            return
+        }
+
+        // The library folder is missing, so the user gets the default folder and the creation runs once more.
+        directory.prepare()
+        if let library = Defaults[.libraryFolder] {
+            _ = fileManager.createFolderIfNeeded(at: library.appendingPathComponent(console))
         }
     }
     
@@ -168,17 +175,14 @@ class DownloadManager: DownloadQueuing {
     }
     
     func restoreDownloadList() {
-        let storedData = UserDefaults.standard.object(forKey: "downloads") as? Data
-        if (storedData != nil) {
-            do {
-                let downloadList = try PropertyListDecoder().decode(DownloadList.self, from: storedData!)
-
-                self.downloadItems = downloadList.items
-            } catch let error as NSError {
-                debugPrint(error)
-                
-                log.error(error)
-            }
+        guard let storedData = UserDefaults.standard.data(forKey: "downloads") else {
+            return
+        }
+        do {
+            let downloadList = try PropertyListDecoder().decode(DownloadList.self, from: storedData)
+            self.downloadItems = downloadList.items
+        } catch {
+            log.error(error)
         }
     }
 
@@ -207,11 +211,11 @@ class DownloadManager: DownloadQueuing {
                 return
             }
 
-            if (item.hasFollowUp) {
-                item.doNext?.cpackPath = item.destinationURL
+            if let next = item.doNext {
+                next.cpackPath = item.destinationURL
                 item.status = "Waiting..."
 
-                enqueue(item.doNext!)
+                enqueue(next)
             } else {
                 await ExtractionManager(item: item, downloadManager: self, notifications: notifications).start()
             }

@@ -16,16 +16,15 @@ protocol DownloadsDirectoryPreparing {
 
 struct DefaultsDownloadsDirectory: DownloadsDirectoryPreparing {
     func prepare() {
-        var dlFolder: URL? = Defaults[.libraryLocation]
-
         let dlDirName = "NPS Downloads"
+        let fileManager = FileManager.default
 
-        do {
-            try Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
-        } catch {
-            dlFolder = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
-            Defaults.set(dlFolder!.absoluteURL, forKey: "dl_library_location")
-            try! Folder(path: dlFolder!.path).createSubfolderIfNeeded(withName: dlDirName)
+        if let folder = Defaults[.libraryLocation], fileManager.createFolderIfNeeded(at: folder.appendingPathComponent(dlDirName)) {
+            return
         }
+
+        let fallback = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads")
+        Defaults.set(fallback.absoluteURL, forKey: "dl_library_location")
+        _ = fileManager.createFolderIfNeeded(at: fallback.appendingPathComponent(dlDirName))
     }
 }
