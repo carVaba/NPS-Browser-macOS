@@ -102,7 +102,7 @@ class PreferencesViewController: NSViewController {
         let extractionBox = Self.makeBox("Extraction Methods", content: extraction)
 
         let defaults = NSButton(title: "Use Defaults".localized, target: self, action: #selector(resetToDefaults(_:)))
-        defaults.bezelStyle = .inline
+        defaults.bezelStyle = .rounded
         let save = NSButton(title: "Save".localized, target: self, action: #selector(save(_:)))
         save.bezelStyle = .rounded
         save.keyEquivalent = "\r"

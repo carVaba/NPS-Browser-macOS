@@ -14,6 +14,11 @@ class GameArtworkViewController: NSViewController {
     override func loadView() {
         imgBoxart.imageScaling = .scaleProportionallyUpOrDown
         imgBoxart.translatesAutoresizingMaskIntoConstraints = false
+        // The artwork has a different size for each game. It scales to the pane and never resizes the pane.
+        for axis in [NSLayoutConstraint.Orientation.horizontal, .vertical] {
+            imgBoxart.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: axis)
+            imgBoxart.setContentCompressionResistancePriority(NSLayoutConstraint.Priority(1), for: axis)
+        }
         // Only the template symbol of a missing artwork is tinted. Real artwork is not changed.
         imgBoxart.contentTintColor = .tertiaryLabelColor
 

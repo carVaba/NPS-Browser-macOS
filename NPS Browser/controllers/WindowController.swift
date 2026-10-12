@@ -61,7 +61,9 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
 
     private static func makeSplitViewController() -> NSSplitViewController {
         let details = NSSplitViewItem(viewController: DetailsViewController())
-        details.minimumThickness = 200
+        // The details have a fixed height, so the artwork pane takes the rest and does not depend on the image.
+        details.minimumThickness = 270
+        details.maximumThickness = 270
         let artwork = NSSplitViewItem(viewController: GameArtworkViewController())
         artwork.canCollapse = true
         artwork.minimumThickness = 90
