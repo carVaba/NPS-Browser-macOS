@@ -9,12 +9,23 @@
 import Cocoa
 
 class GameArtworkViewController: NSViewController {
-    @IBOutlet weak var imgBoxart: NSImageView!
+    let imgBoxart = NSImageView()
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func loadView() {
+        imgBoxart.imageScaling = .scaleProportionallyUpOrDown
+        imgBoxart.translatesAutoresizingMaskIntoConstraints = false
         // Only the template symbol of a missing artwork is tinted. Real artwork is not changed.
         imgBoxart.contentTintColor = .tertiaryLabelColor
+
+        let root = NSView()
+        root.addSubview(imgBoxart)
+        NSLayoutConstraint.activate([
+            imgBoxart.topAnchor.constraint(equalTo: root.topAnchor, constant: 20),
+            imgBoxart.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: 20),
+            imgBoxart.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -20),
+            imgBoxart.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -20)
+        ])
+        view = root
     }
 
     override var representedObject: Any? {

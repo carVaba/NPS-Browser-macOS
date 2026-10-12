@@ -9,33 +9,128 @@
 import Cocoa
 
 class DetailsViewController: NSViewController {
-    
-    @IBOutlet weak var chkBookmark: NSButton!
-    @IBOutlet weak var btnDownload: NSButton!
-    @IBOutlet weak var chkDLGame: NSButton!
-    @IBOutlet weak var chkDLUpdate: NSButton!
-    @IBOutlet weak var chkDLCompatPack: NSButton!
-    
+
+    private let chkBookmark = NSButton()
+    private let btnDownload = NSButton(title: "Download".localized, target: nil, action: nil)
+    private let chkDLGame = NSButton(checkboxWithTitle: "Game".localized, target: nil, action: nil)
+    private let chkDLUpdate = NSButton(checkboxWithTitle: "Update".localized, target: nil, action: nil)
+    private let chkDLCompatPack = NSButton(checkboxWithTitle: "CPack", target: nil, action: nil)
+    private let nameLabel = NSTextField(wrappingLabelWithString: "")
+    private let regionLabel = NSTextField.makeLabel()
+    private let requiredFWLabel = NSTextField.makeLabel()
+
     var windowDelegate: WindowDelegate?
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    private static let firmwareFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+
+    override func loadView() {
+        chkBookmark.setButtonType(.toggle)
+        chkBookmark.isBordered = false
+        chkBookmark.imagePosition = .imageOnly
         chkBookmark.image = NSImage.symbol("star")
         let yellow = NSImage.SymbolConfiguration(paletteColors: [.systemYellow])
         chkBookmark.alternateImage = NSImage.symbol("star.fill").withSymbolConfiguration(yellow)
+        chkBookmark.target = self
+        chkBookmark.action = #selector(btnBookmarkToggle(_:))
+        chkBookmark.setContentHuggingPriority(.required, for: .horizontal)
+
+        nameLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        nameLabel.placeholderString = "title name"
+        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        nameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        regionLabel.alignment = .right
+        requiredFWLabel.alignment = .right
+
+        for checkbox in [chkDLGame, chkDLUpdate, chkDLCompatPack] {
+            checkbox.state = .on
+        }
+        btnDownload.bezelStyle = .rounded
+        btnDownload.target = self
+        btnDownload.action = #selector(btnDownloadClicked(_:))
+
+        let header = NSStackView(views: [nameLabel, chkBookmark])
+        header.orientation = .horizontal
+        header.alignment = .top
+
+        let separator = NSBox()
+        separator.boxType = .separator
+
+        let options = NSStackView(views: [chkDLGame, chkDLUpdate, chkDLCompatPack])
+        options.orientation = .horizontal
+        options.distribution = .fillEqually
+
+        let content = NSStackView(views: [
+            header,
+            Self.makeRow(title: "Region:".localized, value: regionLabel),
+            Self.makeRow(title: "Required FW:".localized, value: requiredFWLabel),
+            separator,
+            options,
+            btnDownload
+        ])
+        content.orientation = .vertical
+        content.alignment = .centerX
+        content.spacing = 12
+        content.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+        content.translatesAutoresizingMaskIntoConstraints = false
+
+        let root = NSView()
+        root.addSubview(content)
+        NSLayoutConstraint.activate([
+            content.topAnchor.constraint(equalTo: root.topAnchor),
+            content.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            content.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            content.bottomAnchor.constraint(lessThanOrEqualTo: root.bottomAnchor),
+            header.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 20),
+            header.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -20),
+            separator.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 20),
+            separator.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -20),
+            options.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 20),
+            options.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -20)
+        ])
+        for row in content.arrangedSubviews where row is NSStackView && row !== header && row !== options {
+            row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 20).isActive = true
+            row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -20).isActive = true
+        }
+        view = root
+    }
+
+    private static func makeRow(title: String, value: NSTextField) -> NSStackView {
+        let titleLabel = NSTextField.makeLabel(title)
+        titleLabel.setContentHuggingPriority(.required, for: .horizontal)
+        value.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let row = NSStackView(views: [titleLabel, value])
+        row.orientation = .horizontal
+        row.distribution = .fill
+        return row
     }
 
     override var representedObject: Any? {
         didSet {
+            guard let item = representedObject as? Item else {
+                chkBookmark.isHidden = true
+                return
+            }
+            chkBookmark.isHidden = false
+            nameLabel.stringValue = item.name ?? ""
+            regionLabel.stringValue = item.region ?? ""
+            requiredFWLabel.stringValue = item.requiredFw.value.flatMap { Self.firmwareFormatter.string(from: NSNumber(value: $0)) } ?? ""
+
             enableBookmarkButton()
             toggleBookmark()
             enableDownloadOptions()
-            
+
             boxartViewController.representedObject = representedObject
         }
     }
 
-    @IBAction func btnDownloadClicked(_ sender: Any) {
+    @objc func btnDownloadClicked(_ sender: Any) {
         let obj = selectedItem
 
         let artwork = boxartViewController
@@ -91,7 +186,7 @@ class DetailsViewController: NSViewController {
         }
     }
     
-    @IBAction func btnBookmarkToggle(_ sender: NSButton) {
+    @objc func btnBookmarkToggle(_ sender: NSButton) {
         if (sender.state == .on) {
             let bookmark = Bookmark(item: selectedItem)
             DBManager().store(bookmark)

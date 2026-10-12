@@ -13,16 +13,27 @@ import RealmSwift
 
 let log = SwiftyBeaver.self
 
-@main
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     
     lazy var downloadManager: DownloadManager = DownloadManager()
+    private(set) var windowController: WindowController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
         setupSwiftyBeaverLogging()
         setupDownloadsDirectory()
+
+        windowController = WindowController()
+        NSApp.mainMenu = MainMenu.make(appDelegate: self, windowController: windowController)
+        windowController.showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func showPreferences(_ sender: Any?) {
+        guard let parent = windowController.window?.contentViewController else {
+            return
+        }
+        parent.presentAsModalWindow(PreferencesViewController())
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

@@ -11,40 +11,153 @@ import Foundation
 
 class PreferencesViewController: NSViewController {
     // Sources
-    @IBOutlet weak var psvgField: NSTextField!
-    @IBOutlet weak var psvdlcField: NSTextField!
-    @IBOutlet weak var psvtField: NSTextField!
-    @IBOutlet weak var psxgField: NSTextField!
-    @IBOutlet weak var pspgField: NSTextField!
-    @IBOutlet weak var ps3gField: NSTextField!
-    @IBOutlet weak var ps3dlcField: NSTextField!
-    @IBOutlet weak var ps3tField: NSTextField!
-    @IBOutlet weak var ps3aField: NSTextField!
-    @IBOutlet weak var compatPackField: NSTextField!
-    @IBOutlet weak var compatPatchField: NSTextField!
-    
+    private let psvgField = PreferencesViewController.makeURLField()
+    private let psvdlcField = PreferencesViewController.makeURLField()
+    private let psvtField = PreferencesViewController.makeURLField()
+    private let psxgField = PreferencesViewController.makeURLField()
+    private let pspgField = PreferencesViewController.makeURLField()
+    private let ps3gField = PreferencesViewController.makeURLField()
+    private let ps3dlcField = PreferencesViewController.makeURLField()
+    private let ps3tField = PreferencesViewController.makeURLField()
+    private let ps3aField = PreferencesViewController.makeURLField()
+    private let compatPackField = PreferencesViewController.makeURLField()
+    private let compatPatchField = PreferencesViewController.makeURLField()
+
     // Display
-    @IBOutlet weak var chkHideInvalidURLItems: NSButton!
-    
+    private let chkHideInvalidURLItems = NSButton(checkboxWithTitle: "Hide items with invalid URLs".localized, target: nil, action: nil)
+
     // Downloads
-    @IBOutlet weak var ccDLField: NSTextField!
-    @IBOutlet weak var dlPathField: NSTextField!
-    
+    private let ccDLField = NSTextField()
+    private let dlPathField = NSTextField()
+
     // Extraction Methods
-    @IBOutlet weak var chkExtractPKG: NSButton!
-    @IBOutlet weak var chkCreateLicense: NSButton!
-    @IBOutlet weak var chkKeepPKG: NSButton!
-    @IBOutlet weak var chkSaveZip: NSButton!
-    @IBOutlet weak var chkCompressPSPISO: NSButton!
-    @IBOutlet weak var compressionFactorStepper: NSStepper!
-    @IBOutlet weak var compressionFactorField: NSTextField!
-//    @IBOutlet weak var chkUnpackPS3Packages: NSButton!
-    
-    
-//    let settings = SettingsManager().getSettings()
+    private let chkExtractPKG = NSButton(checkboxWithTitle: "Extract PKG after downloading".localized, target: nil, action: nil)
+    private let chkCreateLicense = NSButton(checkboxWithTitle: "Create NoNpDRM license with extraction".localized, target: nil, action: nil)
+    private let chkKeepPKG = NSButton(checkboxWithTitle: "Keep PKG after extraction".localized, target: nil, action: nil)
+    private let chkSaveZip = NSButton(checkboxWithTitle: "Save decrypted PKG as ZIP file".localized, target: nil, action: nil)
+    private let chkCompressPSPISO = NSButton(checkboxWithTitle: "Compress PSP ISO to .CSO".localized, target: nil, action: nil)
+    private let compressionFactorStepper = NSStepper()
+    private let compressionFactorField = NSTextField()
+
     var dlLocation: URL?
     var update_checked: Date? = nil
-    
+
+    private static func makeURLField() -> NSTextField {
+        let field = NSTextField()
+        field.placeholderString = "url goes here".localized
+        field.lineBreakMode = .byTruncatingMiddle
+        return field
+    }
+
+    // MARK: - View
+
+    override func loadView() {
+        let integerFormatter = NumberFormatter()
+        integerFormatter.numberStyle = .decimal
+        integerFormatter.usesGroupingSeparator = false
+        integerFormatter.maximumFractionDigits = 0
+        ccDLField.formatter = integerFormatter
+        ccDLField.placeholderString = "3"
+        compressionFactorField.formatter = integerFormatter
+        compressionFactorField.placeholderString = "1"
+
+        dlPathField.placeholderString = "Library Location".localized
+        dlPathField.isEditable = false
+
+        compressionFactorStepper.minValue = 1
+        compressionFactorStepper.maxValue = 9
+        compressionFactorStepper.valueWraps = true
+        compressionFactorStepper.target = self
+        compressionFactorStepper.action = #selector(stepCompressionFactor(_:))
+        chkExtractPKG.target = self
+        chkExtractPKG.action = #selector(toggleEnableExtractionSettings(_:))
+        chkCompressPSPISO.target = self
+        chkCompressPSPISO.action = #selector(toggleCompressionFactor(_:))
+
+        let downloads = Self.makeBox("Downloads", content: Self.makeGrid([
+            [Self.label("Location"), dlPathField, makeChooseButton(identifier: "folder", action: #selector(selectDLPath(_:)))],
+            [Self.label("Concurrent Downloads"), ccDLField]
+        ]))
+        let display = Self.makeBox("Display", content: chkHideInvalidURLItems)
+
+        let sources: [(String, String, NSTextField)] = [
+            ("PSV Games", "psvg", psvgField), ("PSV DLCs", "psvd", psvdlcField), ("PSV Themes", "psvt", psvtField),
+            ("PSX Games", "psxg", psxgField), ("PSP Games", "pspg", pspgField),
+            ("PS3 Games", "ps3g", ps3gField), ("PS3 DLCs", "ps3d", ps3dlcField),
+            ("PS3 Themes", "ps3t", ps3tField), ("PS3 Avatars", "ps3a", ps3aField),
+            ("Compat Packs", "compatpack", compatPackField), ("Compat Patches", "compatpatch", compatPatchField)
+        ]
+        let sourceRows: [[NSView]] = sources.map { title, identifier, field in
+            [Self.label(title), field, makeChooseButton(identifier: identifier, action: #selector(chooseTSVFile(_:)))]
+        }
+        let sourcesBox = Self.makeBox("Sources", content: Self.makeGrid(sourceRows))
+
+        let factorRow = NSStackView(views: [Self.label("Factor"), compressionFactorField, compressionFactorStepper])
+        factorRow.orientation = .horizontal
+        compressionFactorField.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        let extraction = NSStackView(views: [chkExtractPKG, chkCreateLicense, chkKeepPKG, chkSaveZip, chkCompressPSPISO, factorRow])
+        extraction.orientation = .vertical
+        extraction.alignment = .leading
+        extraction.spacing = 8
+        let extractionBox = Self.makeBox("Extraction Methods", content: extraction)
+
+        let defaults = NSButton(title: "Use Defaults".localized, target: self, action: #selector(resetToDefaults(_:)))
+        defaults.bezelStyle = .inline
+        let save = NSButton(title: "Save".localized, target: self, action: #selector(save(_:)))
+        save.bezelStyle = .rounded
+        save.keyEquivalent = "\r"
+        let buttons = NSStackView(views: [defaults, NSView(), save])
+        buttons.orientation = .horizontal
+
+        let root = NSStackView(views: [downloads, display, sourcesBox, extractionBox, buttons])
+        root.orientation = .vertical
+        root.alignment = .leading
+        root.spacing = 14
+        root.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+        for row in root.arrangedSubviews {
+            row.widthAnchor.constraint(equalTo: root.widthAnchor, constant: -40).isActive = true
+        }
+        root.widthAnchor.constraint(equalToConstant: 640).isActive = true
+        view = root
+        title = "Preferences".localized
+    }
+
+    private static func label(_ text: String) -> NSTextField {
+        let field = NSTextField.makeLabel(text.localized)
+        field.alignment = .right
+        return field
+    }
+
+    private static func makeBox(_ title: String, content: NSView) -> NSStackView {
+        let header = NSTextField.makeLabel(title.localized, font: .boldSystemFont(ofSize: NSFont.systemFontSize))
+        let section = NSStackView(views: [header, content])
+        section.orientation = .vertical
+        section.alignment = .leading
+        section.spacing = 8
+        if content is NSGridView {
+            content.widthAnchor.constraint(equalTo: section.widthAnchor).isActive = true
+        }
+        return section
+    }
+
+    private static func makeGrid(_ rows: [[NSView]]) -> NSGridView {
+        let grid = NSGridView(views: rows)
+        grid.rowSpacing = 8
+        grid.columnSpacing = 8
+        grid.column(at: 0).xPlacement = .trailing
+        if grid.numberOfColumns > 1 {
+            grid.column(at: 1).xPlacement = .fill
+        }
+        return grid
+    }
+
+    private func makeChooseButton(identifier: String, action: Selector) -> NSButton {
+        let button = NSButton(title: "...", target: self, action: action)
+        button.bezelStyle = .rounded
+        button.identifier = NSUserInterfaceItemIdentifier(identifier)
+        return button
+    }
+
     override func viewWillAppear() {
         // Remove fullscreen and ability to resize the window
         self.view.window?.styleMask.remove(.fullScreen)
@@ -52,11 +165,11 @@ class PreferencesViewController: NSViewController {
     }
 
     override func viewDidLoad() {
-        updateTextFields()
         super.viewDidLoad()
+        updateTextFields()
     }
     
-    @IBAction func toggleEnableExtractionSettings(_ sender: Any) {
+    @objc func toggleEnableExtractionSettings(_ sender: Any) {
         switch chkExtractPKG.state {
         case .off:
             chkCreateLicense.isEnabled = false
@@ -74,7 +187,7 @@ class PreferencesViewController: NSViewController {
     }
     
     
-    @IBAction func toggleCompressionFactor(_ sender: Any) {
+    @objc func toggleCompressionFactor(_ sender: Any) {
         switch chkCompressPSPISO.state {
         case .on:
             compressionFactorStepper.isEnabled = true
@@ -87,7 +200,7 @@ class PreferencesViewController: NSViewController {
         }
     }
     
-    @IBAction func stepCompressionFactor(_ sender: Any) {
+    @objc func stepCompressionFactor(_ sender: Any) {
         compressionFactorField.integerValue = compressionFactorStepper.integerValue
     }
     
@@ -123,7 +236,7 @@ class PreferencesViewController: NSViewController {
         toggleCompressionFactor(self)
     }
     
-    @IBAction func selectDLPath(_ sender: Any) {
+    @objc func selectDLPath(_ sender: Any) {
         guard let window = view.window else { return }
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
@@ -138,7 +251,7 @@ class PreferencesViewController: NSViewController {
         }
     }
     
-    @IBAction func chooseTSVFile(_ sender: NSButton) {
+    @objc func chooseTSVFile(_ sender: NSButton) {
         let id = sender.identifier!.rawValue
         
         func openDialog(txtField: NSTextField) {
@@ -170,11 +283,12 @@ class PreferencesViewController: NSViewController {
         }
     }
 
-    @IBAction func resetToDefaults(_ sender: Any) {
+    @objc func resetToDefaults(_ sender: Any) {
         Defaults.removeAll()
+        updateTextFields()
     }
     
-    @IBAction func save(_ sender: Any) {
+    @objc func save(_ sender: Any) {
         storePreferences()
     }
     

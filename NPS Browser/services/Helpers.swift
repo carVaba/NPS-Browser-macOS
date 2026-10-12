@@ -30,7 +30,7 @@ class Helpers {
     }
     
     var windowDelegate: WindowDelegate {
-        return NSApp.windows.first?.windowController as! WindowController
+        return sharedAppDelegate.windowController
     }
     
     var dataController: DataViewController {
@@ -43,19 +43,6 @@ class Helpers {
     
     func showLoadingViewController() {
         dataController.presentAsSheet(windowDelegate.loadingViewController)
-    }
-    
-    func rowObject(for sender: NSButton) -> Any? {
-        var superView = sender.superview
-        while let view = superView, !(view is NSTableCellView) {
-            superView = view.superview
-        }
-        guard let cell = superView as? NSTableCellView else {
-            print("Sender is not in a table view cell!")
-            return nil
-        }
-        
-        return cell.objectValue
     }
     
     func makeDownloadItem(from item: Item, downloadURL: URL, fileType: FileType) -> DownloadItem {
@@ -147,5 +134,21 @@ extension NSTableView {
         enclosingScrollView?.hasHorizontalScroller = false
         enclosingScrollView?.horizontalScrollElasticity = .none
         sizeLastColumnToFit()
+    }
+}
+
+extension String {
+    var localized: String {
+        return NSLocalizedString(self, comment: "")
+    }
+}
+
+extension NSTextField {
+    static func makeLabel(_ text: String = "", font: NSFont = .systemFont(ofSize: NSFont.systemFontSize)) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = font
+        label.lineBreakMode = .byTruncatingTail
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }
 }

@@ -9,26 +9,61 @@
 import Cocoa
 
 class BookmarkListItemCellView: NSTableCellView {
-    @IBOutlet weak var btnDownload: NSButton!
-    @IBOutlet weak var btnRemove: NSButton!
+    private let btnDownload = NSButton()
+    private let btnRemove = NSButton()
     var item: Bookmark?
+    var onRemove: ((Bookmark) -> Void)?
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        btnDownload.image = NSImage.symbol("arrow.down.circle")
-        btnRemove.image = NSImage.symbol("trash")
+    init(identifier: NSUserInterfaceItemIdentifier) {
+        super.init(frame: .zero)
+        self.identifier = identifier
+
+        let name = NSTextField.makeLabel()
+        name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textField = name
+
+        for (button, symbol, action) in [(btnDownload, "arrow.down.circle", #selector(btnDownloadClicked(_:))),
+                                         (btnRemove, "trash", #selector(btnRemoveClicked(_:)))] {
+            button.image = NSImage.symbol(symbol)
+            button.imagePosition = .imageOnly
+            button.isBordered = false
+            button.target = self
+            button.action = action
+        }
+        btnDownload.toolTip = "Download".localized
+
+        let buttons = NSStackView(views: [btnDownload, btnRemove])
+        buttons.orientation = .horizontal
+        buttons.spacing = 8
+        buttons.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(name)
+        addSubview(buttons)
+        NSLayoutConstraint.activate([
+            name.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            name.centerYAnchor.constraint(equalTo: centerYAnchor),
+            name.trailingAnchor.constraint(lessThanOrEqualTo: buttons.leadingAnchor, constant: -8),
+            buttons.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            buttons.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
     }
-    
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        self.item = objectValue as? Bookmark
+
+    required init?(coder: NSCoder) {
+        fatalError("BookmarkListItemCellView is created in code.")
     }
-    
-    @IBAction func btnDownloadClicked(_ sender: NSButton) {
+
+    override var objectValue: Any? {
+        didSet {
+            item = objectValue as? Bookmark
+            textField?.stringValue = item?.name ?? ""
+        }
+    }
+
+    @objc func btnDownloadClicked(_ sender: NSButton) {
         DownloadFlyAnimation.run(image: sender.image, from: sender)
-        
+
         // TODO: Add all 3 download types to DL list
-        
+
         let downloadItem              = DownloadItem()
         downloadItem.fileType         = self.item?.fileType
         downloadItem.consoleType      = self.item?.consoleType
@@ -36,8 +71,14 @@ class BookmarkListItemCellView: NSTableCellView {
         downloadItem.name             = self.item?.name
         downloadItem.downloadURL    = URL(string: (self.item?.downloadUrl)!)
         downloadItem.zrif             = self.item?.zrif
-        
-        
+
+
         Helpers().sharedAppDelegate.downloadManager.enqueue(downloadItem)
+    }
+
+    @objc func btnRemoveClicked(_ sender: NSButton) {
+        if let item = item {
+            onRemove?(item)
+        }
     }
 }
