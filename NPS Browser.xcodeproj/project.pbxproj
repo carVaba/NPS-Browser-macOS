@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CE9CC037EF5EEF4E3F4151F /* InvalidItemFiltering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4155E747792AF0BB83755FDA /* InvalidItemFiltering.swift */; };
 		0ED2F628FF680EC6264EAAA8 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03398F71359C9F6C2B9FCAFA /* Log.swift */; };
 		1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */; };
 		2D20AFE6A9ED9C94D28D6360 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD507C48DF2E0614C5DF5B78 /* Localizable.strings */; };
 		2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0099598B9832558EC7024AB4 /* AppKitExtensions.swift */; };
+		2F3954CEA79163597269A2D9 /* ItemProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2196C0AD61C81A181047507D /* ItemProviding.swift */; };
+		4A9FF1FE076ADFA34B2A2B8C /* ItemListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C371002D648FFF9228DD92F /* ItemListViewModel.swift */; };
 		5108B79E211641190065BA71 /* TSVData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5108B79D211641190065BA71 /* TSVData.swift */; };
 		5139DF87209F6DE9004F65F9 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF86209F6DE9004F65F9 /* WindowController.swift */; };
 		5139DF89209FC6C6004F65F9 /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF88209FC6C6004F65F9 /* DetailsViewController.swift */; };
@@ -69,6 +72,8 @@
 		0099598B9832558EC7024AB4 /* AppKitExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppKitExtensions.swift; sourceTree = "<group>"; };
 		03398F71359C9F6C2B9FCAFA /* Log.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		1BD933E6EDE6E234DD1B71BD /* ItemSelecting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemSelecting.swift; sourceTree = "<group>"; };
+		2196C0AD61C81A181047507D /* ItemProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemProviding.swift; sourceTree = "<group>"; };
+		4155E747792AF0BB83755FDA /* InvalidItemFiltering.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvalidItemFiltering.swift; sourceTree = "<group>"; };
 		481F332F3D80331DA485DAAA /* MainMenu.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		5108B79D211641190065BA71 /* TSVData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSVData.swift; sourceTree = "<group>"; };
 		5121752E20A73EBC00772C86 /* NPS Browser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "NPS Browser.entitlements"; sourceTree = "<group>"; };
@@ -116,6 +121,7 @@
 		55C366EE39477128270AA561 /* TransferRateEstimator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransferRateEstimator.swift; sourceTree = "<group>"; };
 		75D9BE96265F519535EA2137 /* DownloadQueuing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadQueuing.swift; sourceTree = "<group>"; };
 		84662BBC5B57EF1412BB6FDF /* main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		9C371002D648FFF9228DD92F /* ItemListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemListViewModel.swift; sourceTree = "<group>"; };
 		B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DownloadFlyAnimation.swift; sourceTree = "<group>"; };
 		C1D990EB3C952DB06161BC1F /* MainToolbar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainToolbar.swift; sourceTree = "<group>"; };
 		D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSTableViewDiffableDataSource+Async.swift"; sourceTree = "<group>"; };
@@ -138,6 +144,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3922F1F37C64C2AEA63A6423 /* viewmodels */ = {
+			isa = PBXGroup;
+			children = (
+				9C371002D648FFF9228DD92F /* ItemListViewModel.swift */,
+			);
+			name = viewmodels;
+			path = viewmodels;
+			sourceTree = "<group>";
+		};
 		516B855220AE7FE800E4A083 /* services */ = {
 			isa = PBXGroup;
 			children = (
@@ -155,6 +170,8 @@
 				75D9BE96265F519535EA2137 /* DownloadQueuing.swift */,
 				55C366EE39477128270AA561 /* TransferRateEstimator.swift */,
 				03398F71359C9F6C2B9FCAFA /* Log.swift */,
+				4155E747792AF0BB83755FDA /* InvalidItemFiltering.swift */,
+				2196C0AD61C81A181047507D /* ItemProviding.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -277,6 +294,7 @@
 				5121752E20A73EBC00772C86 /* NPS Browser.entitlements */,
 				84662BBC5B57EF1412BB6FDF /* main.swift */,
 				BD507C48DF2E0614C5DF5B78 /* Localizable.strings */,
+				3922F1F37C64C2AEA63A6423 /* viewmodels */,
 			);
 			path = "NPS Browser";
 			sourceTree = "<group>";
@@ -420,6 +438,9 @@
 				913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */,
 				1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */,
 				0ED2F628FF680EC6264EAAA8 /* Log.swift in Sources */,
+				0CE9CC037EF5EEF4E3F4151F /* InvalidItemFiltering.swift in Sources */,
+				2F3954CEA79163597269A2D9 /* ItemProviding.swift in Sources */,
+				4A9FF1FE076ADFA34B2A2B8C /* ItemListViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

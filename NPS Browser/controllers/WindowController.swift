@@ -20,7 +20,9 @@ class WindowController: NSWindowController {
         let loading = LoadingSheetPresenter()
         let network = NetworkManager(selection: toolbar, loading: loading, alerts: alerts, sources: sources)
 
-        let data = DataViewController(selection: toolbar, loader: network)
+        let list = ItemListViewModel(selection: toolbar, loader: network,
+                                     filter: DefaultsInvalidItemFilter(), provider: RealmItemProvider())
+        let data = DataViewController(viewModel: list)
         loading.host = data
         toolbar.delegate = data
 

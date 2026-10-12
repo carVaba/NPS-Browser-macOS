@@ -7,7 +7,6 @@
 //
 
 import Cocoa
-import RealmSwift
 
 // The table asks for sort changes through the data source, which the diffable data source does not forward.
 private final class ItemsDataSource: NSTableViewDiffableDataSource<Int, String> {
@@ -46,23 +45,16 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
     private let scrollView = NSScrollView()
     private var dataSource: ItemsDataSource?
     private var contentTask: Task<Void, Never>?
-    private let selection: ItemSelecting
-    private let loader: ListLoading
+    private let viewModel: ItemListViewModel
 
-    // Declared before `items`: it sets the default Realm configuration with the migration.
-    private var realm: Realm = DBMigration.configureMigration()
-
-    var items: Results<Item>? = try! Realm().objects(Item.self)
-
-    // The rows come straight from the Realm results, so a large list is not copied.
-    private var baseResults: Results<Item>?
-    private var itemsByID: [String: Item] = [:]
     private var isReloading = false
 
-    init(selection: ItemSelecting, loader: ListLoading) {
-        self.selection = selection
-        self.loader = loader
+    init(viewModel: ItemListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
+        viewModel.onRowsChanged = { [weak self] in
+            self?.showRows()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -91,7 +83,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
             self?.makeCell(in: tableView, column: tableColumn, id: id) ?? NSView()
         }
         dataSource.onSortDescriptorsChanged = { [weak self] in
-            self?.sortDescriptorsChanged()
+            self?.sortChanged()
         }
         self.dataSource = dataSource
 
@@ -103,23 +95,13 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
     }
 
     override func viewDidAppear() {
-        let it = selection.itemType
-        let ct = it.console.rawValue
-        let ft = it.fileType.rawValue
-        let reg = selection.region
-
-        if (items?.isEmpty)! {
-            requestData()
-        } else {
-            setContent(items?.filter(NSPredicate(format: "consoleType == %@ AND fileType == %@ AND region == %@ AND pkgDirectLink != 'MISSING'", ct, ft, reg)))
-        }
+        viewModel.start()
     }
 
-    // Loads the list from the source, then shows what the toolbar selects.
+    // Loads the list from the source again.
     func requestData() {
         Task {
-            await loader.makeRequest()
-            setContent(applySearch(to: typeContent(itemType: selection.itemType, region: selection.region)))
+            await viewModel.reload()
         }
     }
 
@@ -129,84 +111,32 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
         }
     }
 
-    var predicateString: String {
-        var str = "consoleType == %@ AND fileType == %@ AND region == %@ "
-        let it = selection.itemType
+    func selectionChanged() {
+        viewModel.typeChanged()
+    }
 
-        if Defaults[.hidesInvalidURLItems] {
-            str.append(" AND pkgDirectLink != 'MISSING'")
+    func searchChanged() {
+        viewModel.searchChanged()
+    }
 
-            switch( it.console ) {
-            case .psv:
-                str.append(" AND zrif != 'MISSING'")
-            default: break
-            }
+    private func sortChanged() {
+        guard let descriptor = tableView.sortDescriptors.first, let key = descriptor.key else {
+            viewModel.sort = nil
+            return
         }
-        return str
-    }
-
-    func filterType(itemType: ItemType, region: String) {
-        let objects = typeContent(itemType: itemType, region: region)
-
-        if objects.isEmpty {
-            requestData()
-        }
-
-        setContent(applySearch(to: objects))
-    }
-
-    private func typeContent(itemType: ItemType, region: String) -> Results<Item> {
-        let p = NSPredicate(format: predicateString, itemType.console.rawValue, itemType.fileType.rawValue, region)
-        return items!.filter(p)
-    }
-
-    // The search text stays active when the console or the region changes.
-    private func applySearch(to objects: Results<Item>) -> Results<Item> {
-        let searchString = selection.searchString
-        if searchString.isEmpty {
-            return objects
-        }
-        return objects.filter("name contains[c] %@", searchString)
-    }
-
-    func filterString(itemType: ItemType, region: String, searchString: String) {
-        var p = predicateString
-        p.append(" AND name contains[c] %@")
-        let q = NSPredicate(format: p, itemType.console.rawValue, itemType.fileType.rawValue, region, searchString)
-
-        setContent(items!.filter(q))
-    }
-
-    func setContent(_ content: Results<Item>?) {
-        baseResults = content
-        sortDescriptorsChanged()
+        viewModel.sort = ItemSort(key: key, ascending: descriptor.ascending)
     }
 
     // The latest request wins, so a quick series of filter changes shows only the last one.
-    private func sortDescriptorsChanged() {
+    private func showRows() {
         contentTask?.cancel()
         contentTask = Task {
-            await showContent()
+            await applyRows()
         }
     }
 
-    private func showContent() async {
-        var results = baseResults
-        if let descriptor = tableView.sortDescriptors.first, let key = descriptor.key {
-            results = results?.sorted(byKeyPath: key, ascending: descriptor.ascending)
-        }
-
-        var ids: [String] = []
-        var lookup: [String: Item] = [:]
-        if let results = results {
-            for (index, item) in results.enumerated() {
-                // A snapshot needs unique identifiers, and two rows of the list can share a key.
-                let id = lookup[item.pk] == nil ? item.pk : "\(item.pk)#\(index)"
-                ids.append(id)
-                lookup[id] = item
-            }
-        }
-        itemsByID = lookup
+    private func applyRows() async {
+        let ids = viewModel.rowIDs
 
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
         snapshot.appendSections([0])
@@ -230,7 +160,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
 
     private func publishSelection() {
         let row = tableView.selectedRow
-        guard row >= 0, let id = dataSource?.itemIdentifier(forRow: row), let item = itemsByID[id] else {
+        guard row >= 0, let id = dataSource?.itemIdentifier(forRow: row), let item = viewModel.item(forID: id) else {
             return
         }
         representedObject = item
@@ -251,7 +181,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
     }
 
     private func makeCell(in tableView: NSTableView, column tableColumn: NSTableColumn, id: String) -> NSView {
-        guard let item = itemsByID[id] else {
+        guard let item = viewModel.item(forID: id) else {
             return NSView()
         }
         let cell = tableView.makeView(withIdentifier: tableColumn.identifier, owner: self) as? NSTableCellView ?? makeCell(identifier: tableColumn.identifier)

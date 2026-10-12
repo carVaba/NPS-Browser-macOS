@@ -5,12 +5,9 @@
 //  Created by JK3Y on 5/18/18.
 //  Copyright © 2018 JK3Y. All rights reserved.
 //
-import RealmSwift
-
 protocol ToolbarDelegate: AnyObject {
-    func setContent(_ content: Results<Item>?)
+    // The console, the file type, or the region changed.
+    func selectionChanged()
 
-    func filterType(itemType: ItemType, region: String)
-
-    func filterString(itemType: ItemType, region: String, searchString: String)
+    func searchChanged()
 }

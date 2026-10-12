@@ -147,16 +147,10 @@ final class MainToolbar: NSObject, NSToolbarDelegate, ItemSelecting, DownloadsBu
     }
 
     @objc private func onSelectionChanged(_ sender: Any) {
-        delegate?.filterType(itemType: itemType, region: region)
+        delegate?.selectionChanged()
     }
 
     @objc private func onFilterSearchBar(_ sender: NSSearchField) {
-        let searchString = tbSearchBar.stringValue
-
-        if (!searchString.isEmpty) {
-            delegate?.filterString(itemType: itemType, region: region, searchString: searchString)
-        } else {
-            delegate?.filterType(itemType: itemType, region: region)
-        }
+        delegate?.searchChanged()
     }
 }
