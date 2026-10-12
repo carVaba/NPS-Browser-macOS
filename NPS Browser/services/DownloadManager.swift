@@ -38,7 +38,7 @@ class DownloadManager: DownloadQueuing {
                 .appendingPathComponent(consoleFolder)
                 .appendingPathComponent(suggestedFilename ?? fallbackName)
 
-            return URL(fileURLWithPath: path.path.removingPercentEncoding ?? path.path)
+            return URL(fileURLWithPath: path.path.removingPercentEncoding ?? path.path).uniqueFileURL
         }
     }
     
@@ -61,6 +61,14 @@ class DownloadManager: DownloadQueuing {
     
     func enqueue(_ item: DownloadItem) {
         guard let url = item.downloadURL else {
+            return
+        }
+
+        // The same file twice at once only splits the speed, and both copies write to the same output folder.
+        if downloadItems.contains(where: { $0.downloadURL == url && ($0.isStoppable || $0.isResumable) }) {
+            alerts.showAlert(messageText: "Already in the downloads list",
+                             informativeText: "\(item.name ?? "This file") is already downloading or stopped. Resume it in the downloads list.",
+                             alertStyle: .informational)
             return
         }
 

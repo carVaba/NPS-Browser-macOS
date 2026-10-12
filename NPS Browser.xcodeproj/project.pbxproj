@@ -56,6 +56,7 @@
 		7479B9A1F2CF70D619FE4F27 /* MainToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D990EB3C952DB06161BC1F /* MainToolbar.swift */; };
 		913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C366EE39477128270AA561 /* TransferRateEstimator.swift */; };
 		96E4670D6A71F8B26BAE1A72 /* Presenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD50145399E6CE1D41D6BB2 /* Presenting.swift */; };
+		9B7FC8DAF199C79BE1A02ECF /* URL+UniqueName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5082FB44D5D73FF9E71CB36F /* URL+UniqueName.swift */; };
 		AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1990FE7F48E89B575D144C4 /* DownloadFlyAnimation.swift */; };
 		B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 307EFCE15643D2468550A11A /* RealmSwift */; };
 		B991C52FD4DDE1B0B7CD029B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84662BBC5B57EF1412BB6FDF /* main.swift */; };
@@ -74,6 +75,7 @@
 		2196C0AD61C81A181047507D /* ItemProviding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemProviding.swift; sourceTree = "<group>"; };
 		4155E747792AF0BB83755FDA /* InvalidItemFiltering.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvalidItemFiltering.swift; sourceTree = "<group>"; };
 		481F332F3D80331DA485DAAA /* MainMenu.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		5082FB44D5D73FF9E71CB36F /* URL+UniqueName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "URL+UniqueName.swift"; sourceTree = "<group>"; };
 		5108B79D211641190065BA71 /* TSVData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSVData.swift; sourceTree = "<group>"; };
 		5121752E20A73EBC00772C86 /* NPS Browser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "NPS Browser.entitlements"; sourceTree = "<group>"; };
 		5139DF86209F6DE9004F65F9 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 				0099598B9832558EC7024AB4 /* AppKitExtensions.swift */,
 				D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */,
 				C2F453CB1D32A38FEB929222 /* FileManager+Folder.swift */,
+				5082FB44D5D73FF9E71CB36F /* URL+UniqueName.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -437,6 +440,7 @@
 				D1706B58FD3AEB380A99292F /* DownloadFolderLocating.swift in Sources */,
 				61034CDED1E1D53B57893674 /* ProgressBarView.swift in Sources */,
 				20DA9B94A286FE507C6A991C /* FileManager+Folder.swift in Sources */,
+				9B7FC8DAF199C79BE1A02ECF /* URL+UniqueName.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
