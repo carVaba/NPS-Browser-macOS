@@ -45,7 +45,7 @@ class DetailsViewController: NSViewController {
 
         if (chkDLGame.state == .on) {
             if let link = obj.pkgDirectLink, let url = URL(string: link) {
-                self.sendDLData(url: url, fileType: .Game)
+                self.sendDLData(url: url, fileType: .game)
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
@@ -53,7 +53,7 @@ class DetailsViewController: NSViewController {
             Task {
                 do {
                     let updateURL = try await NetworkManager().fetchUpdateXML(url: url)
-                    self.sendDLData(url: updateURL, fileType: .Update)
+                    self.sendDLData(url: updateURL, fileType: .update)
                 } catch {
                     log.error(error)
                 }
@@ -63,22 +63,22 @@ class DetailsViewController: NSViewController {
             let ct: ConsoleType = ConsoleType(rawValue: obj.consoleType!)!
             let ft: FileType = FileType(rawValue: obj.fileType!)!
             switch(ct) {
-            case .PS3:
+            case .ps3:
                 let url = URL(string: obj.downloadRapFile!)
-                sendDLData(url: url!, fileType: .RAP)
-            case .PSV:
+                sendDLData(url: url!, fileType: .rap)
+            case .psv:
                 switch(ft) {
-                case .Game:
+                case .game:
                     let titleId = obj.titleId
                     
                     if let cpacko: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPack'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpacko.downloadUrl)!)
-                        baseDownloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .CPack)
+                        baseDownloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .compatPack)
                     }
                     
                     if let cpatcho: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPatch'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpatcho.downloadUrl)!)
-                        let item = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .CPatch)
+                        let item = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .compatPatch)
                         baseDownloadItem?.doNext = item
                         item.parentItem = baseDownloadItem
                     }
@@ -119,9 +119,9 @@ class DetailsViewController: NSViewController {
         chkDLGame.title = ftype.rawValue
         
         switch(ctype) {
-        case .PSV:
+        case .psv:
             switch(ftype) {
-            case .Game:
+            case .game:
                 let titleId = selectedItem.titleId
                 chkDLCompatPack.title = "CPack"
                 chkDLGame.isEnabled = true
@@ -142,7 +142,7 @@ class DetailsViewController: NSViewController {
                 chkDLUpdate.isHidden = true
                 chkDLUpdate.isEnabled = false
             }
-        case .PS3:
+        case .ps3:
             let rap = selectedItem.rap!
             chkDLCompatPack.isHidden = false
             chkDLUpdate.isHidden = true

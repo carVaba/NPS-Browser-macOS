@@ -49,14 +49,14 @@ struct TSVData {
         sha256               = row["SHA256"]
         requiredFw           = row["Required FW"].flatMap { Float($0) }
 
-        if type.console == .PS3 {
+        if type.console == .ps3 {
             rap = row["RAP"]
             if let contentId = contentId, let rap = rap {
                 downloadRapFile = "https://nopaystation.com/tools/rap2file/\(contentId)/\(rap)"
             }
         } else {
             rap = row["RAP"]
-            downloadRapFile = row["Download .RAP file"]
+            downloadRapFile = row["Download .rap file"]
         }
     }
 }

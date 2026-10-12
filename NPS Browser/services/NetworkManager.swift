@@ -64,7 +64,7 @@ class NetworkManager {
 
         Helpers().loadingViewController.closeWindow()
 
-        if (self.itemType.console == ConsoleType.PSV && self.itemType.fileType == FileType.Game) {
+        if (self.itemType.console == ConsoleType.psv && self.itemType.fileType == FileType.game) {
             Task {
                 await loadCompatPacks()
             }

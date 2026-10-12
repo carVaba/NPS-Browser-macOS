@@ -66,7 +66,7 @@ class Helpers {
         obj.name            = "\(fileType.rawValue) - \(item.name!)"
         obj.downloadURL   = downloadURL
         obj.zrif = item.zrif
-        if fileType == .Game {
+        if fileType == .game {
             obj.sha256 = item.sha256
         }
         obj.consoleType = item.consoleType
@@ -107,25 +107,25 @@ class Helpers {
     
     func sourceURL(for itemType: ItemType) -> URL? {
         switch (itemType.console) {
-        case .PSV:
+        case .psv:
             switch (itemType.fileType) {
-            case .Game: return Defaults[.src_psv_games]
-            case .DLC: return Defaults[.src_psv_dlcs]
-            case .Theme: return Defaults[.src_psv_themes]
-            case .CPack: return Defaults[.src_compatPacks]
-            case .CPatch: return Defaults[.src_compatPatch]
+            case .game: return Defaults[.src_psv_games]
+            case .dlc: return Defaults[.src_psv_dlcs]
+            case .theme: return Defaults[.src_psv_themes]
+            case .compatPack: return Defaults[.src_compatPacks]
+            case .compatPatch: return Defaults[.src_compatPatch]
             default: break
             }
-        case .PS3:
+        case .ps3:
             switch (itemType.fileType) {
-            case .Game: return Defaults[.src_ps3_games]
-            case .DLC: return Defaults[.src_ps3_dlcs]
-            case .Theme: return Defaults[.src_ps3_themes]
-            case .Avatar: return Defaults[.src_ps3_avatars]
+            case .game: return Defaults[.src_ps3_games]
+            case .dlc: return Defaults[.src_ps3_dlcs]
+            case .theme: return Defaults[.src_ps3_themes]
+            case .avatar: return Defaults[.src_ps3_avatars]
             default: break
             }
-        case .PSP: return Defaults[.src_psp_games]
-        case .PSX: return Defaults[.src_psx_games]
+        case .psp: return Defaults[.src_psp_games]
+        case .psx: return Defaults[.src_psx_games]
         }
         
         return nil

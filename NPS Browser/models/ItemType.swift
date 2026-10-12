@@ -9,11 +9,21 @@
 import Foundation
 
 enum ConsoleType: String {
-    case PSV, PS3, PSX, PSP
+    case psv = "PSV"
+    case ps3 = "PS3"
+    case psx = "PSX"
+    case psp = "PSP"
 }
 
 enum FileType: String {
-    case Game, Update, DLC, Theme, Avatar, CPack, CPatch, RAP
+    case game = "Game"
+    case update = "Update"
+    case dlc = "DLC"
+    case theme = "Theme"
+    case avatar = "Avatar"
+    case compatPack = "CPack"
+    case compatPatch = "CPatch"
+    case rap = "RAP"
 }
 
 struct ItemType: CustomStringConvertible {
@@ -28,21 +38,21 @@ struct ItemType: CustomStringConvertible {
     }
     init(menuTitle: String, fileType: FileType) {
         let console = ConsoleType(rawValue: String(menuTitle.split(separator: " ").first ?? ""))
-        self.init(console: console ?? .PSV, fileType: fileType)
+        self.init(console: console ?? .psv, fileType: fileType)
     }
 }
 
 extension FileType {
     init(tag: Int) {
         switch tag {
-        case 1: self = .DLC
-        case 2: self = .Theme
-        case 3: self = .Update
-        case 4: self = .Avatar
-        case 5: self = .CPack
-        case 6: self = .CPatch
-        case 7: self = .RAP
-        default: self = .Game
+        case 1: self = .dlc
+        case 2: self = .theme
+        case 3: self = .update
+        case 4: self = .avatar
+        case 5: self = .compatPack
+        case 6: self = .compatPatch
+        case 7: self = .rap
+        default: self = .game
         }
     }
 }

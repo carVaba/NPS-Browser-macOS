@@ -67,23 +67,23 @@ class DownloadListItemCellView: NSTableCellView {
             dlLoc?.appendPathComponent(item!.consoleType!)
             
             switch (ct) {
-            case .PSV:
+            case .psv:
                 switch(ft) {
-                case .Game:
+                case .game:
                     dlLoc?.appendPathComponent("app/\(item!.titleId!)")
-                case .DLC:
+                case .dlc:
                     dlLoc?.appendPathComponent("addcont/\(item!.titleId!)")
-                case .Update:
+                case .update:
                     dlLoc?.appendPathComponent("patch/\(item!.titleId!)")
-                case .Theme:
+                case .theme:
                     dlLoc?.appendPathComponent("bgdl/t")
                 default: break
                 }
-            case .PS3:
+            case .ps3:
                 NSWorkspace.shared.open(dlLoc!)
-            case .PSP:
+            case .psp:
                 dlLoc?.appendPathComponent("pspemu/ISO")
-            case .PSX:
+            case .psx:
                 dlLoc?.appendPathComponent("pspemu/")
             }
         }

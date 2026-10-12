@@ -56,7 +56,7 @@ class DataViewController: NSViewController, ToolbarDelegate {
             str.append(" AND pkgDirectLink != 'MISSING'")
             
             switch( it.console ) {
-            case .PSV:
+            case .psv:
                 str.append(" AND zrif != 'MISSING'")
             default: break
             }
