@@ -12,7 +12,7 @@ import Foundation
 @MainActor
 class Helpers {
     
-    func makeAlert(messageText: String = "", informativeText: String = "", alertStyle: NSAlert.Style = .warning) {
+    func showAlert(messageText: String = "", informativeText: String = "", alertStyle: NSAlert.Style = .warning) {
         let alert = NSAlert()
         alert.messageText = messageText
         alert.informativeText = informativeText
@@ -21,7 +21,7 @@ class Helpers {
         alert.runModal()
     }
     
-    func makeNotification(title: String, subtitle: String) {
+    func showNotification(title: String, subtitle: String) {
         sharedAppDelegate.showNotification(title: title, subtitle: subtitle)
     }
     

@@ -189,7 +189,7 @@ class PreferencesViewController: NSViewController {
         if url?.pathExtension == endsWith {
             Defaults[defaultsKey] = url
         } else {
-            Helpers().makeAlert(messageText: "Invalid URL", informativeText: "Invalid URL given: \(urlString). File must have extension '.\(endsWith)'", alertStyle: .critical)
+            Helpers().showAlert(messageText: "Invalid URL", informativeText: "Invalid URL given: \(urlString). File must have extension '.\(endsWith)'", alertStyle: .critical)
             throw NSError()
         }
     }

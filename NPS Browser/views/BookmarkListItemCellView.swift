@@ -38,6 +38,6 @@ class BookmarkListItemCellView: NSTableCellView {
         dlItem.zrif             = self.item?.zrif
         
         
-        Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: dlItem)
+        Helpers().sharedAppDelegate.downloadManager.enqueue(dlItem)
     }
 }

@@ -17,7 +17,7 @@ class NetworkManager {
 
     func makeRequest() async {
         guard let url = Helpers().getUrlSettingsByType(itemType: itemType) else {
-            Helpers().makeAlert(messageText: "No URL set for \(self.itemType.console.rawValue) \(self.itemType.fileType.rawValue)s.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+            Helpers().showAlert(messageText: "No URL set for \(self.itemType.console.rawValue) \(self.itemType.fileType.rawValue)s.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for item type: \(itemType.description)")
             return
@@ -25,7 +25,7 @@ class NetworkManager {
         
         if (url.isFileURL) {
             guard (try? url.checkResourceIsReachable()) != nil else {
-                Helpers().makeAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(url)", alertStyle: .warning)
+                Helpers().showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(url)", alertStyle: .warning)
                 return
             }
         }
@@ -58,7 +58,7 @@ class NetworkManager {
         } catch {
             log.error(error)
             Helpers().loadingViewController.closeWindow()
-            Helpers().makeAlert(messageText: "Could not load the list.", informativeText: error.localizedDescription, alertStyle: .warning)
+            Helpers().showAlert(messageText: "Could not load the list.", informativeText: error.localizedDescription, alertStyle: .warning)
             return
         }
 
@@ -75,14 +75,14 @@ class NetworkManager {
 
     private func loadCompatPacks() async {
         guard let cpackurl = Defaults[.src_compatPacks] else {
-            Helpers().makeAlert(messageText: "No URL set for Compat Packs.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+            Helpers().showAlert(messageText: "No URL set for Compat Packs.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat packs.")
             return
         }
 
         guard let cpatchurl: URL = Defaults[.src_compatPatch] else {
-            Helpers().makeAlert(messageText: "No URL set for Compat Patches.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
+            Helpers().showAlert(messageText: "No URL set for Compat Patches.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for compat patches")
             return
@@ -90,7 +90,7 @@ class NetworkManager {
 
         if (cpatchurl.isFileURL) {
             guard (try? cpatchurl.checkResourceIsReachable()) != nil else {
-                Helpers().makeAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(cpatchurl)", alertStyle: .warning)
+                Helpers().showAlert(messageText: "Resource not found!", informativeText: "File does not exist at path: \(cpatchurl)", alertStyle: .warning)
                 return
             }
         }

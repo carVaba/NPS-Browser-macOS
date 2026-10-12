@@ -19,9 +19,9 @@ class DownloadManager {
         restoreDownloadList()
     }
     
-    func getDestination(data: DLItem) -> FileDownload.Destination {
-        let fallbackName = data.downloadUrl?.lastPathComponent ?? "download.pkg"
-        let consoleFolder = data.consoleType ?? ""
+    func makeDestination(for item: DLItem) -> FileDownload.Destination {
+        let fallbackName = item.downloadUrl?.lastPathComponent ?? "download.pkg"
+        let consoleFolder = item.consoleType ?? ""
         let libraryFolder: URL = Defaults[.dl_library_folder] ?? URL(string: try! Folder.home.subfolder(named: "Downloads").path)!
 
         return { suggestedFilename in
@@ -34,57 +34,57 @@ class DownloadManager {
         }
     }
     
-    func makeConsoleFolder(dlItem: DLItem) {
+    func createConsoleFolder(for item: DLItem) {
         let filepath = Defaults[.dl_library_folder]!
-        let console = dlItem.consoleType
+        let console = item.consoleType
 
         if (try? Folder(path: filepath.path).createSubfolderIfNeeded(withName: console!)) != nil {
             return
         } else {
             Helpers().sharedAppDelegate.setupDownloadsDirectory()
-            makeConsoleFolder(dlItem: dlItem)
+            createConsoleFolder(for: item)
         }
     }
     
-    func addToDownloadQueue(data: DLItem) {
-        guard let url = data.downloadUrl else {
+    func enqueue(_ item: DLItem) {
+        guard let url = item.downloadUrl else {
             return
         }
 
-        let destination = getDestination(data: data)
+        let destination = makeDestination(for: item)
         
-        makeConsoleFolder(dlItem: data)
+        createConsoleFolder(for: item)
         
         // store the download in the same object so we can stop/resume it later
         let download = FileDownload(url: url, waitsForConnectivity: true, destination: destination)
-        data.download = download
-        data.destination = destination
-        data.status = "Queued..."
-        data.makeStoppable()
+        item.download = download
+        item.destination = destination
+        item.status = "Queued..."
+        item.makeStoppable()
 
-        downloadItems.insert(data, at: 0)
+        downloadItems.insert(item, at: 0)
         NotificationCenter.default.post(name: .downloadListChanged, object: nil)
 
-        start(item: data, download: download)
+        start(item: item, download: download)
     }
     
-    func resumeDownload(data: DLItem) {
-        let destination = data.destination ?? getDestination(data: data)
+    func resume(_ item: DLItem) {
+        let destination = item.destination ?? makeDestination(for: item)
         let download: FileDownload
-        if let resumeData = data.resumeData {
+        if let resumeData = item.resumeData {
             download = FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
-        } else if let url = data.downloadUrl {
+        } else if let url = item.downloadUrl {
             download = FileDownload(url: url, waitsForConnectivity: true, destination: destination)
         } else {
             return
         }
 
-        data.download = download
-        data.resumeData = nil
-        start(item: data, download: download)
+        item.download = download
+        item.resumeData = nil
+        start(item: item, download: download)
     }
 
-    func stopDownload(item: DLItem) {
+    func stop(_ item: DLItem) {
         item.isUserStopped = true
         item.status = "Stopped"
         item.makeResumable()
@@ -98,7 +98,7 @@ class DownloadManager {
     }
 
     // Stops the download and removes it from the list. The temporary data is deleted by the system.
-    func cancelDownload(item: DLItem) {
+    func cancel(_ item: DLItem) {
         item.isUserStopped = true
         item.isCancelled = true
 
@@ -114,7 +114,7 @@ class DownloadManager {
         downloadItems.removeAll { $0.isRemovable }
     }
     
-    func moveToCompleted(item: DLItem) {
+    func moveToCompleted(_ item: DLItem) {
         guard let index = downloadItems.firstIndex(of: item) else {
             return
         }
@@ -152,7 +152,7 @@ class DownloadManager {
             let data = try PropertyListEncoder().encode(downloadList)
             UserDefaults.standard.set(data, forKey: "downloads")
         } catch {
-            Helpers().makeAlert(messageText: "Save Failed",
+            Helpers().showAlert(messageText: "Save Failed",
                                 informativeText: "Download list could not be stored.",
                                 alertStyle: .warning)
             
@@ -204,7 +204,7 @@ class DownloadManager {
                 item.doNext?.cpackPath = item.destinationURL
                 item.status = "Waiting..."
 
-                addToDownloadQueue(data: item.doNext!)
+                enqueue(item.doNext!)
             } else {
                 await ExtractionManager(item: item, downloadManager: self).start()
             }
@@ -255,7 +255,7 @@ class DownloadManager {
     }
 
     private func makeRetry(for item: DLItem, after error: Error) -> FileDownload? {
-        let destination = item.destination ?? getDestination(data: item)
+        let destination = item.destination ?? makeDestination(for: item)
         if let resumeData = (error as? DownloadFailure)?.resumeData {
             return FileDownload(resumeData: resumeData, waitsForConnectivity: true, destination: destination)
         }
@@ -297,7 +297,7 @@ class DownloadManager {
         }
 
         if failure.isCancelled {
-            // `stopDownload` already updated the item.
+            // `stop(_:)` already updated the item.
             return
         }
 
@@ -324,7 +324,7 @@ class DownloadManager {
         let actual = await FileChecksum.sha256(of: fileURL)
         if let actual = actual, actual != expected {
             log.warning("Checksum mismatch for \(fileURL.lastPathComponent)")
-            Helpers().makeAlert(messageText: "Checksum mismatch",
+            Helpers().showAlert(messageText: "Checksum mismatch",
                                 informativeText: "\(item.name ?? fileURL.lastPathComponent) does not match the expected SHA256. The file may be damaged or the list may be outdated.",
                                 alertStyle: .warning)
         }

@@ -69,7 +69,7 @@ class ExtractionManager {
                     try await Self.unzip(item.cpackPath!, to: filepath!)
                     item.parentItem?.status = "Extraction Complete"
                     item.parentItem?.makeViewable()
-                    Helpers().makeNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
+                    Helpers().showNotification(title: (item.parentItem?.name!)!, subtitle: (item.parentItem?.status!)!)
                 }
                 try await Self.unzip(item.destinationURL!, to: filepath!)
                 completeDownload(status: "Extraction Complete")
@@ -101,7 +101,7 @@ class ExtractionManager {
             if (status == 0) {
                 setStatus("Extraction Complete")
                 item.makeViewable()
-                Helpers().makeNotification(title: item.name ?? "", subtitle: item.status ?? "")
+                Helpers().showNotification(title: item.name ?? "", subtitle: item.status ?? "")
                 cleanup()
             } else {
                 log.error("pkg2zip stopped with status \(status)")
@@ -123,9 +123,9 @@ class ExtractionManager {
     private func completeDownload(status: String) {
         setStatus(status)
         self.item.makeViewable()
-        Helpers().makeNotification(title: self.item.name!, subtitle: self.item.status!)
+        Helpers().showNotification(title: self.item.name!, subtitle: self.item.status!)
         
-        downloadManager.moveToCompleted(item: self.item)
+        downloadManager.moveToCompleted(self.item)
         return
     }
     
@@ -183,7 +183,7 @@ class ExtractionManager {
 //            DispatchQueue.main.async {
 //                self.setStatus("Extraction Complete")
 //                self.item.makeViewable()
-//                Helpers().makeNotification(title: self.item.name!, subtitle: self.item.status!)
+//                Helpers().showNotification(title: self.item.name!, subtitle: self.item.status!)
 //            }
 //        }
 //

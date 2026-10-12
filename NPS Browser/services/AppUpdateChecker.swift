@@ -48,9 +48,9 @@ class AppUpdateChecker {
                 Helpers().loadingViewController.setLabel(text: "Downloading...")
                 Helpers().loadingViewController.setProgress(amount: fraction * 100)
             }
-            Helpers().makeAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
+            Helpers().showAlert(messageText: "Update Downloaded", informativeText: "Update has been downloaded.", alertStyle: .informational)
         } catch {
-            Helpers().makeAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
+            Helpers().showAlert(messageText: "Download failed", informativeText: "The update has failed to download.", alertStyle: .warning)
         }
 
         Helpers().loadingViewController.closeWindow()

@@ -52,11 +52,11 @@ class DownloadListItemCellView: NSTableCellView {
         guard let item = item else {
             return
         }
-        Helpers().sharedAppDelegate.downloadManager.cancelDownload(item: item)
+        Helpers().sharedAppDelegate.downloadManager.cancel(item)
     }
     
     func stopRequest() {
-        Helpers().sharedAppDelegate.downloadManager.stopDownload(item: item!)
+        Helpers().sharedAppDelegate.downloadManager.stop(item!)
     }
     
     func viewFile() {
@@ -96,7 +96,7 @@ class DownloadListItemCellView: NSTableCellView {
     
     func resumeRequest() {
         item!.status = "Resuming..."
-        Helpers().sharedAppDelegate.downloadManager.resumeDownload(data: item!)
+        Helpers().sharedAppDelegate.downloadManager.resume(item!)
         
         item?.makeStoppable()
     }

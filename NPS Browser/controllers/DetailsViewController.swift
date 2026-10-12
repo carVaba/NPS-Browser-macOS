@@ -83,7 +83,7 @@ class DetailsViewController: NSViewController {
                         item.parentItem = baseDLItem
                     }
                     
-                    Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: baseDLItem!)
+                    Helpers().sharedAppDelegate.downloadManager.enqueue(baseDLItem!)
                 default: break
                 }
             default: break
@@ -179,7 +179,7 @@ class DetailsViewController: NSViewController {
     func sendDLData(url: URL, fileType: FileType) {
         let obj = selectedItem
         let dlItem = Helpers().makeDLItem(data: obj, downloadUrl: url, fileType: fileType)
-        Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: dlItem)
+        Helpers().sharedAppDelegate.downloadManager.enqueue(dlItem)
     }
     
     var selectedItem: Item {
