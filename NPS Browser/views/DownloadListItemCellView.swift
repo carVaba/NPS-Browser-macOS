@@ -27,6 +27,8 @@ class DownloadListItemCellView: NSTableCellView {
         return formatter
     }()
 
+    private static let buttonSize: CGFloat = 24
+
     private let btnAction = NSButton()
     private let btnCancel = NSButton()
     private let progressBar = ProgressBarView()
@@ -55,6 +57,8 @@ class DownloadListItemCellView: NSTableCellView {
             button.image = NSImage.symbol(symbol)
             button.imagePosition = .imageOnly
             button.isBordered = false
+            button.imageScaling = .scaleProportionallyDown
+            button.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .regular)
             button.target = self
             button.action = action
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -66,7 +70,13 @@ class DownloadListItemCellView: NSTableCellView {
         for subview in [name, typeLabel, progressBar, statusLabel, detailsLabel, btnAction, btnCancel] {
             addSubview(subview)
         }
+        // The icons have a fixed size, so they stay in place and the bar width does not depend on the icon.
         NSLayoutConstraint.activate([
+            btnCancel.widthAnchor.constraint(equalToConstant: Self.buttonSize),
+            btnCancel.heightAnchor.constraint(equalToConstant: Self.buttonSize),
+            btnAction.widthAnchor.constraint(equalToConstant: Self.buttonSize),
+            btnAction.heightAnchor.constraint(equalToConstant: Self.buttonSize),
+
             btnCancel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
             btnCancel.centerYAnchor.constraint(equalTo: centerYAnchor),
             btnAction.trailingAnchor.constraint(equalTo: btnCancel.leadingAnchor, constant: -8),
