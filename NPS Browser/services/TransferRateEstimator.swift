@@ -7,20 +7,23 @@ final class TransferRateEstimator {
     private var lastSample: (date: Date, bytes: Int64)?
     private(set) var bytesPerSecond: Double = 0
 
-    func update(bytesWritten: Int64, at date: Date = Date()) {
+    // Returns true when the speed changed.
+    @discardableResult
+    func update(bytesWritten: Int64, at date: Date = Date()) -> Bool {
         guard let last = lastSample else {
             lastSample = (date, bytesWritten)
-            return
+            return false
         }
 
         let elapsed = date.timeIntervalSince(last.date)
         guard elapsed >= minimumInterval else {
-            return
+            return false
         }
 
         let instant = Double(bytesWritten - last.bytes) / elapsed
         bytesPerSecond = bytesPerSecond == 0 ? instant : smoothing * instant + (1 - smoothing) * bytesPerSecond
         lastSample = (date, bytesWritten)
+        return true
     }
 
     func remainingSeconds(bytesWritten: Int64, bytesExpected: Int64) -> TimeInterval? {

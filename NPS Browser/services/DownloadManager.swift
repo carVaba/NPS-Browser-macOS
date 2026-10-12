@@ -229,13 +229,23 @@ class DownloadManager: DownloadQueuing {
             do {
                 let rate = TransferRateEstimator()
                 let fileURL = try await attempt.run(onProgress: { progress in
-                    item.status = "Downloading..."
-                    item.makeStoppable()
-                    item.progress = (progress.fraction * 100).rounded()
-                    rate.update(bytesWritten: progress.bytesWritten)
-                    item.bytesPerSecond = rate.bytesPerSecond
-                    item.timeRemaining = rate.remainingSeconds(bytesWritten: progress.bytesWritten,
-                                                               bytesExpected: progress.bytesExpected) ?? 0
+                    // KVO notifies on every set, so only changed values are written.
+                    guard !item.isUserStopped else {
+                        return
+                    }
+                    if item.status != "Downloading..." {
+                        item.status = "Downloading..."
+                        item.makeStoppable()
+                    }
+                    let percent = (progress.fraction * 100).rounded()
+                    if item.progress != percent {
+                        item.progress = percent
+                    }
+                    if rate.update(bytesWritten: progress.bytesWritten) {
+                        item.bytesPerSecond = rate.bytesPerSecond
+                        item.timeRemaining = rate.remainingSeconds(bytesWritten: progress.bytesWritten,
+                                                                   bytesExpected: progress.bytesExpected) ?? 0
+                    }
                 }, onWaiting: {
                     item.status = "Waiting for the network..."
                     item.clearTransferRate()
