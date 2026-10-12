@@ -162,15 +162,13 @@ class DetailsViewController: NSViewController {
         let artwork = boxartViewController
         DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart, to: animationTarget)
 
-        var baseDownloadItem: DownloadItem? = nil
-
         if (chkDLGame.state == .on) {
             if let link = obj.pkgDirectLink, let url = URL(string: link) {
                 self.sendDLData(url: url, fileType: .game)
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
-            let url = updates.updateXMLURL(forTitleID: selectedItem.titleId!)
+            let url = updates.updateXMLURL(forTitleID: selectedItem.titleId ?? "")
             Task {
                 do {
                     let updateURL = try await self.updates.fetchUpdateXML(url: url)
@@ -181,35 +179,48 @@ class DetailsViewController: NSViewController {
             }
         }
         if (chkDLCompatPack.state == .on && chkDLCompatPack.isEnabled && chkDLCompatPack.isHidden == false) {
-            let ct: ConsoleType = ConsoleType(rawValue: obj.consoleType!)!
-            let ft: FileType = FileType(rawValue: obj.fileType!)!
-            switch(ct) {
-            case .ps3:
-                let url = URL(string: obj.downloadRapFile!)
-                sendDLData(url: url!, fileType: .rap)
-            case .psv:
-                switch(ft) {
-                case .game:
-                    let titleId = obj.titleId
-                    
-                    if let cpacko: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPack'", titleId!), sorted: nil).first {
-                        let url = URL(string: (cpacko.downloadUrl)!)
-                        baseDownloadItem = DownloadItem(item: obj, downloadURL: url!, fileType: .compatPack)
-                    }
-                    
-                    if let cpatcho: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPatch'", titleId!), sorted: nil).first {
-                        let url = URL(string: (cpatcho.downloadUrl)!)
-                        let item = DownloadItem(item: obj, downloadURL: url!, fileType: .compatPatch)
-                        baseDownloadItem?.doNext = item
-                        item.parentItem = baseDownloadItem
-                    }
-                    
-                    downloads.enqueue(baseDownloadItem!)
-                default: break
-                }
-            default: break
-            }
+            enqueueCompatDownloads(for: obj)
         }
+    }
+
+    private func enqueueCompatDownloads(for obj: Item) {
+        guard let console = ConsoleType(rawValue: obj.consoleType ?? ""),
+              let type = FileType(rawValue: obj.fileType ?? "") else {
+            return
+        }
+
+        switch (console, type) {
+        case (.ps3, _):
+            if let link = obj.downloadRapFile, let url = URL(string: link) {
+                sendDLData(url: url, fileType: .rap)
+            }
+        case (.psv, .game):
+            guard let titleID = obj.titleId else {
+                return
+            }
+            let pack = makeCompatItem(for: obj, titleID: titleID, type: "CompatPack", fileType: .compatPack)
+            let patch = makeCompatItem(for: obj, titleID: titleID, type: "CompatPatch", fileType: .compatPatch)
+
+            // The patch is unpacked over the pack, so it follows the pack. A game can have only one of them.
+            if let pack = pack {
+                pack.doNext = patch
+                patch?.parentItem = pack
+                downloads.enqueue(pack)
+            } else if let patch = patch {
+                downloads.enqueue(patch)
+            }
+        default:
+            break
+        }
+    }
+
+    private func makeCompatItem(for obj: Item, titleID: String, type: String, fileType: FileType) -> DownloadItem? {
+        let predicate = NSPredicate(format: "titleId == %@ AND type == %@", titleID, type)
+        guard let entry = DBManager().fetch(CompatPack.self, predicate: predicate, sorted: nil).first,
+              let link = entry.downloadUrl, let url = URL(string: link) else {
+            return nil
+        }
+        return DownloadItem(item: obj, downloadURL: url, fileType: fileType)
     }
     
     @objc func btnBookmarkToggle(_ sender: NSButton) {
