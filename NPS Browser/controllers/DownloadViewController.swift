@@ -14,8 +14,10 @@ class DownloadViewController: NSViewController {
     private let dlTableView = NSTableView()
     private var dataSource: NSTableViewDiffableDataSource<Int, DownloadItem>?
     private let downloads: DownloadQueuing
+    private let folders: DownloadFolderLocating
 
-    init(downloads: DownloadQueuing) {
+    init(downloads: DownloadQueuing, folders: DownloadFolderLocating) {
+        self.folders = folders
         self.downloads = downloads
         super.init(nibName: nil, bundle: nil)
     }
@@ -104,7 +106,7 @@ class DownloadViewController: NSViewController {
 
     private func makeCell(in tableView: NSTableView, item: DownloadItem) -> NSView {
         let cell = tableView.makeView(withIdentifier: Self.cellIdentifier, owner: self) as? DownloadListItemCellView
-            ?? DownloadListItemCellView(identifier: Self.cellIdentifier, downloads: downloads)
+            ?? DownloadListItemCellView(identifier: Self.cellIdentifier, downloads: downloads, folders: folders)
         cell.objectValue = item
         return cell
     }

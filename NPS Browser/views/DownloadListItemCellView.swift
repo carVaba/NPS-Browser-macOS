@@ -29,16 +29,18 @@ class DownloadListItemCellView: NSTableCellView {
 
     private let btnAction = NSButton()
     private let btnCancel = NSButton()
-    private let progressBar = NSProgressIndicator()
+    private let progressBar = ProgressBarView()
     private let statusLabel = NSTextField.makeLabel(font: .messageFont(ofSize: 11))
     private let detailsLabel = NSTextField.makeLabel(font: .messageFont(ofSize: 11))
     private let typeLabel = NSTextField.makeLabel(font: .messageFont(ofSize: 11))
     private var observations: [NSKeyValueObservation] = []
     private let downloads: DownloadQueuing
+    private let folders: DownloadFolderLocating
     var item: DownloadItem?
 
-    init(identifier: NSUserInterfaceItemIdentifier, downloads: DownloadQueuing) {
+    init(identifier: NSUserInterfaceItemIdentifier, downloads: DownloadQueuing, folders: DownloadFolderLocating) {
         self.downloads = downloads
+        self.folders = folders
         super.init(frame: .zero)
         self.identifier = identifier
 
@@ -46,11 +48,6 @@ class DownloadListItemCellView: NSTableCellView {
         name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         textField = name
 
-        progressBar.style = .bar
-        progressBar.isIndeterminate = false
-        progressBar.controlSize = .small
-        progressBar.minValue = 0
-        progressBar.maxValue = 100
         progressBar.translatesAutoresizingMaskIntoConstraints = false
 
         for (button, symbol, action) in [(btnAction, "pause.circle", #selector(doAction(_:))),
@@ -64,6 +61,7 @@ class DownloadListItemCellView: NSTableCellView {
         }
         detailsLabel.alignment = .right
         typeLabel.alignment = .right
+        addGestureRecognizer(NSClickGestureRecognizer(target: self, action: #selector(rowClicked(_:))))
 
         for subview in [name, typeLabel, progressBar, statusLabel, detailsLabel, btnAction, btnCancel] {
             addSubview(subview)
@@ -135,7 +133,8 @@ class DownloadListItemCellView: NSTableCellView {
         textField?.stringValue = item.name ?? ""
         typeLabel.stringValue = item.fileType ?? ""
         statusLabel.stringValue = item.status ?? ""
-        progressBar.doubleValue = item.progress
+        progressBar.fraction = item.progress / 100
+        progressBar.fillColor = item.isViewable ? .systemGreen : .controlAccentColor
         detailsLabel.stringValue = detailsText(for: item)
         changeImage()
     }
@@ -184,42 +183,20 @@ class DownloadListItemCellView: NSTableCellView {
         downloads.stop(item!)
     }
     
-    func viewFile() {
-        var dlLoc = Defaults[.libraryFolder]
-        if Defaults[.extractsAfterDownloading] {
-            let ct:ConsoleType = ConsoleType(rawValue: item!.consoleType!)!
-            let ft:FileType = FileType(rawValue: item!.fileType!)!
-            
-            dlLoc?.appendPathComponent(item!.consoleType!)
-            
-            switch (ct) {
-            case .psv:
-                switch(ft) {
-                case .game:
-                    dlLoc?.appendPathComponent("app/\(item!.titleId!)")
-                case .dlc:
-                    dlLoc?.appendPathComponent("addcont/\(item!.titleId!)")
-                case .update:
-                    dlLoc?.appendPathComponent("patch/\(item!.titleId!)")
-                case .theme:
-                    dlLoc?.appendPathComponent("bgdl/t")
-                default: break
-                }
-            case .ps3:
-                NSWorkspace.shared.open(dlLoc!)
-            case .psp:
-                dlLoc?.appendPathComponent("pspemu/ISO")
-            case .psx:
-                dlLoc?.appendPathComponent("pspemu/")
-            }
+    // A click on a finished download opens its folder.
+    @objc private func rowClicked(_ sender: Any) {
+        if item?.isViewable == true {
+            viewFile()
         }
-        
-        let str = dlLoc?.absoluteString.removingPercentEncoding
-        let path = URL(fileURLWithPath: str!, isDirectory: true)
-        
-        NSWorkspace.shared.open(path)
     }
-    
+
+    func viewFile() {
+        guard let item = item, let folder = folders.folder(for: item) else {
+            return
+        }
+        NSWorkspace.shared.open(folder)
+    }
+
     func resumeRequest() {
         item!.status = "Resuming..."
         downloads.resume(item!)

@@ -12,10 +12,11 @@ import Cocoa
 class WindowController: NSWindowController {
     private let toolbar: MainToolbar
     private let downloads: DownloadQueuing
+    private let folders: DownloadFolderLocating
     private let dataViewController: DataViewController
     private var popover: NSPopover?
 
-    init(downloads: DownloadQueuing, alerts: AlertPresenting, sources: SourceURLProviding) {
+    init(downloads: DownloadQueuing, folders: DownloadFolderLocating, alerts: AlertPresenting, sources: SourceURLProviding) {
         let toolbar = MainToolbar()
         let loading = LoadingSheetPresenter()
         let network = NetworkManager(selection: toolbar, loading: loading, alerts: alerts, sources: sources)
@@ -44,12 +45,13 @@ class WindowController: NSWindowController {
 
         self.toolbar = toolbar
         self.downloads = downloads
+        self.folders = folders
         self.dataViewController = data
         super.init(window: window)
 
         toolbar.onShowDownloads = { [weak self] button in
             guard let self = self else { return }
-            self.showPopover(DownloadViewController(downloads: self.downloads), from: button)
+            self.showPopover(DownloadViewController(downloads: self.downloads, folders: self.folders), from: button)
         }
         toolbar.onShowBookmarks = { [weak self] button in
             guard let self = self else { return }

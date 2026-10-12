@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     
     private let alerts = AppKitAlertPresenter()
     private let sources = DefaultsSourceURLs()
+    private let folders = DefaultsDownloadFolderLocator()
     private let downloadsDirectory = DefaultsDownloadsDirectory()
     lazy var downloadManager = DownloadManager(alerts: alerts, notifications: self, directory: downloadsDirectory)
     private(set) var windowController: WindowController!
@@ -22,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         downloadsDirectory.prepare()
 
-        windowController = WindowController(downloads: downloadManager, alerts: alerts, sources: sources)
+        windowController = WindowController(downloads: downloadManager, folders: folders, alerts: alerts, sources: sources)
         NSApp.mainMenu = MainMenu.make(appDelegate: self, windowController: windowController)
         windowController.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
