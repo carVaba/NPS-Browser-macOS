@@ -42,8 +42,11 @@ class DetailsViewController: NSViewController {
 
         nameLabel.font = .systemFont(ofSize: 16, weight: .semibold)
         nameLabel.placeholderString = "title name"
+        nameLabel.maximumNumberOfLines = 0
+        nameLabel.lineBreakMode = .byWordWrapping
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         nameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        chkBookmark.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         regionLabel.alignment = .right
         requiredFWLabel.alignment = .right
@@ -58,6 +61,8 @@ class DetailsViewController: NSViewController {
         let header = NSStackView(views: [nameLabel, chkBookmark])
         header.orientation = .horizontal
         header.alignment = .top
+        header.distribution = .fill
+        header.spacing = 8
 
         let separator = NSBox()
         separator.boxType = .separator
@@ -109,6 +114,14 @@ class DetailsViewController: NSViewController {
         row.orientation = .horizontal
         row.distribution = .fill
         return row
+    }
+
+    // A wrapping label needs its width to know its height, so the width is passed back after each layout.
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        if nameLabel.preferredMaxLayoutWidth != nameLabel.frame.width {
+            nameLabel.preferredMaxLayoutWidth = nameLabel.frame.width
+        }
     }
 
     override var representedObject: Any? {
