@@ -122,10 +122,6 @@ class DownloadManager {
         downloadItems.insert(item, at: downloadItems.endIndex)
     }
     
-    func getObjectQueue() -> [DLItem] {
-        return self.downloadItems
-    }
-    
     // Stops the running downloads and keeps their resume data, so the next start continues the files.
     func stopAndStoreDownloadList() async {
         var running: [(item: DLItem, download: FileDownload)] = []

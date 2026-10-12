@@ -31,14 +31,14 @@ class DetailsViewController: NSViewController {
             toggleBookmark()
             enableDownloadOptions()
             
-            getBoxartViewController().representedObject = representedObject
+            boxartViewController.representedObject = representedObject
         }
     }
 
     @IBAction func btnDownloadClicked(_ sender: Any) {
-        let obj = getROManagedObject()
+        let obj = selectedItem
 
-        let artwork = getBoxartViewController()
+        let artwork = boxartViewController
         DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart)
 
         var baseDLItem: DLItem? = nil
@@ -49,7 +49,7 @@ class DetailsViewController: NSViewController {
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
-            let url = NetworkManager().getUpdateXMLURLFromHMAC(titleId: getROManagedObject().titleId!)
+            let url = NetworkManager().getUpdateXMLURLFromHMAC(titleId: selectedItem.titleId!)
             Task {
                 do {
                     let updateURL = try await NetworkManager().fetchUpdateXML(url: url)
@@ -93,16 +93,16 @@ class DetailsViewController: NSViewController {
     
     @IBAction func btnBookmarkToggle(_ sender: NSButton) {
         if (sender.state == .on) {
-            let bookmark = Bookmark(item: getROManagedObject())
+            let bookmark = Bookmark(item: selectedItem)
             DBManager().store(object: bookmark)
         } else {
-            let bookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", getROManagedObject().pk)).first
+            let bookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", selectedItem.pk)).first
             DBManager().delete(object: bookmark!)
         }
     }
 
     func enableBookmarkButton() {
-        let link = getROManagedObject().pkgDirectLink
+        let link = selectedItem.pkgDirectLink
         if (link == "MISSING") {
             btnDownload.isEnabled = false
             chkBookmark.isEnabled = false
@@ -113,8 +113,8 @@ class DetailsViewController: NSViewController {
     }
     
     func enableDownloadOptions() {
-        let ctype: ConsoleType = ConsoleType(rawValue: getROManagedObject().consoleType!)!
-        let ftype: FileType = FileType(rawValue: getROManagedObject().fileType!)!
+        let ctype: ConsoleType = ConsoleType(rawValue: selectedItem.consoleType!)!
+        let ftype: FileType = FileType(rawValue: selectedItem.fileType!)!
         
         chkDLGame.title = ftype.rawValue
         
@@ -122,7 +122,7 @@ class DetailsViewController: NSViewController {
         case .PSV:
             switch(ftype) {
             case .Game:
-                let titleId = getROManagedObject().titleId
+                let titleId = selectedItem.titleId
                 chkDLCompatPack.title = "CPack"
                 chkDLGame.isEnabled = true
                 chkDLUpdate.isEnabled = true
@@ -143,7 +143,7 @@ class DetailsViewController: NSViewController {
                 chkDLUpdate.isEnabled = false
             }
         case .PS3:
-            let rap = getROManagedObject().rap!
+            let rap = selectedItem.rap!
             chkDLCompatPack.isHidden = false
             chkDLUpdate.isHidden = true
             if (rap == "NOT REQUIRED" || rap == "UNLOCK/LICENSE BY DLC" || rap == "MISSING") {
@@ -160,7 +160,7 @@ class DetailsViewController: NSViewController {
     }
     
     func toggleBookmark() {
-        let predicate = NSPredicate(format: "uuid == %@", getROManagedObject().pk)
+        let predicate = NSPredicate(format: "uuid == %@", selectedItem.pk)
         let bookmark = DBManager().fetch(Bookmark.self, predicate: predicate)
 
         if bookmark.isEmpty {
@@ -171,22 +171,22 @@ class DetailsViewController: NSViewController {
     }
     
     func toggleBookmark(comparePK: String) {
-        if getROManagedObject().pk == comparePK {
+        if selectedItem.pk == comparePK {
             chkBookmark.state = .off
         }
     }
 
     func sendDLData(url: URL, fileType: FileType) {
-        let obj = getROManagedObject()
+        let obj = selectedItem
         let dlItem = Helpers().makeDLItem(data: obj, downloadUrl: url, fileType: fileType)
         Helpers().sharedAppDelegate.downloadManager.addToDownloadQueue(data: dlItem)
     }
     
-    func getROManagedObject() -> Item {
+    var selectedItem: Item {
         return representedObject as! Item
     }
     
-    func getBoxartViewController() -> GameArtworkViewController {
+    var boxartViewController: GameArtworkViewController {
         let vc: GameArtworkViewController = parent?.children[1] as! GameArtworkViewController
         return vc
     }

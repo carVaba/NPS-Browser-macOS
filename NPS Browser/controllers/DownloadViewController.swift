@@ -40,7 +40,7 @@ class DownloadViewController: NSViewController {
     }
     
     func updateView() {
-        let content = Helpers().sharedAppDelegate.downloadManager.getObjectQueue()
+        let content = Helpers().sharedAppDelegate.downloadManager.downloadItems
         dlArrayController.content = content
     }
 }

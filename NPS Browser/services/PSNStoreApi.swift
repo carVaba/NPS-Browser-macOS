@@ -19,7 +19,7 @@ class PSNStoreApi {
         self.consoleType = ConsoleType(rawValue: item.consoleType!)!
     }
     
-    private func getImageURL() -> URL {
+    private var imageURL: URL {
         let region = item.region!
         let contentId = item.contentId!
         var language = "en"
@@ -39,9 +39,9 @@ class PSNStoreApi {
         return URL(string: psnUrl)!
     }
     
-    func getImage() async -> NSImage {
+    func fetchImage() async -> NSImage {
         do {
-            let data = try await HTTPClient.data(from: getImageURL())
+            let data = try await HTTPClient.data(from: imageURL)
             if let image = NSImage(data: data) {
                 return image
             }

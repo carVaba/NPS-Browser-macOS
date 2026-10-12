@@ -29,7 +29,7 @@ class ExtractionManager {
     }
     
     func start() async {
-        if (!shouldDoExtract()) {
+        if (!shouldExtract) {
             completeDownload(status: "Download Complete")
             return
         }
@@ -97,7 +97,7 @@ class ExtractionManager {
         }
 
         do {
-            let status = try await ProcessRunner.run(executable: pkg2zip, arguments: getArguments(), currentDirectory: consoleFolder)
+            let status = try await ProcessRunner.run(executable: pkg2zip, arguments: pkg2zipArguments, currentDirectory: consoleFolder)
             if (status == 0) {
                 setStatus("Extraction Complete")
                 item.makeViewable()
@@ -129,7 +129,7 @@ class ExtractionManager {
         return
     }
     
-    private func shouldDoExtract() -> Bool {
+    private var shouldExtract: Bool {
         if (isPS3) {
             return false
         }
@@ -147,7 +147,7 @@ class ExtractionManager {
         }
     }
     
-    private func getArguments() -> [String] {
+    private var pkg2zipArguments: [String] {
         // pkg2zip args: [zip (nothing) or not (-x)] [.pkg path] [zRIF string]
         var arguments: [String] = []
         

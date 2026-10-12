@@ -106,7 +106,7 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
 //    @IBAction func toggleArtworkSidebar(_ sender: NSMenuItem) {
 //        debugPrint(sender)
 //
-//        let sv = dataController.detailsViewController.getBoxartViewController().parent as! NSSplitViewController
+//        let sv = dataController.detailsViewController.boxartViewController.parent as! NSSplitViewController
 //        let av = sv.splitViewItems.last!
 //
 //        if av.isCollapsed {

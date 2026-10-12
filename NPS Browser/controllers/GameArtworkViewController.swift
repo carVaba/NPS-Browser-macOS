@@ -21,7 +21,7 @@ class GameArtworkViewController: NSViewController {
         didSet {
             imgBoxart.image = nil
             
-            getImage()
+            loadImage()
         }
     }
     
@@ -30,10 +30,10 @@ class GameArtworkViewController: NSViewController {
         self.imgBoxart.image = image
     }
     
-    func getImage() {
+    func loadImage() {
         let api = PSNStoreApi(item: representedObject as! Item)
         Task {
-            setImage(image: await api.getImage())
+            setImage(image: await api.fetchImage())
         }
     }
 }
