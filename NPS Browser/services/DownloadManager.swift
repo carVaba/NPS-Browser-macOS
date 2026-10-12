@@ -242,7 +242,7 @@ class DownloadManager {
                 }
 
                 item.status = "Retrying (\(number + 1)/\(Self.maxAttempts))..."
-                try? await Task.sleep(for: .seconds(Double(number) * 2))
+                try? await Task.sleep(nanoseconds: UInt64(number) * 2_000_000_000)
                 guard !item.isUserStopped, let next = makeRetry(for: item, after: error) else {
                     return .failure(error)
                 }

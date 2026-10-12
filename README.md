@@ -1,7 +1,7 @@
 # NPS Browser for macOS
 
 A Swift implementation of NPS Browser.\
-**Requires macOS 13 or later. Built and tested with Xcode 27 on the latest macOS (macOS 27).**
+**Requires macOS 12 or later. Built and tested with Xcode 27 on the latest macOS (macOS 27).**
 
 This fork is updated for current macOS. It runs natively on Apple silicon and on Intel Macs.
 
@@ -38,7 +38,7 @@ defaults delete JK3Y.NPS-Browser
 ## Compatibility
 | Item | Version |
 |---|---|
-| macOS | 13 or later, tested on macOS 27 |
+| macOS | 12 or later, tested on macOS 27 |
 | Xcode | 26 or later, tested with Xcode 27 |
 | Swift | 5 language mode, built with the Swift 6 toolchain |
 | Architectures | arm64 and x86_64 (universal) |
