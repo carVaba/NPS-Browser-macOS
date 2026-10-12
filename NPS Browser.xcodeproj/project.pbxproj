@@ -588,7 +588,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "$(SRCROOT)/NPS Browser/Info.plist";
@@ -598,7 +598,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.4.6;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_SWIFT_FLAGS = "$(inherited)\n$(inherited)\n$(inherited)\n \"-D\"\n \"COCOAPODS\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "JK3Y.NPS-Browser";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -619,7 +619,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 69;
+				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "$(SRCROOT)/NPS Browser/Info.plist";
@@ -629,7 +629,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.4.6;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_SWIFT_FLAGS = "$(inherited)\n$(inherited)\n$(inherited)\n \"-D\"\n \"COCOAPODS\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "JK3Y.NPS-Browser";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,4 +1,28 @@
 # Changelog
+## v2.0.0
+This is the first release of the fork. It is updated with Claude and supervised by the maintainer.
+
+### Added
+- Download speed and time left in the download list
+- Green progress bar for finished downloads, and a click opens the folder with the files
+- Downloads retry on network errors and wait for the network to return
+- Cancel button in the download list
+- SHA256 check for games, updates and compatibility packs
+- A second copy of a running download is blocked. A finished file gets a suffix, like `name 2.pkg`.
+- Long names are cut in the middle, like in Safari
+
+### Changed
+- macOS 12 or later is required. Universal app for Apple silicon and Intel.
+- The UI is built in AppKit code. The storyboard is removed.
+- Networking uses `URLSession` with `async/await`. Alamofire and Promises are removed.
+- Fuzi and SwiftyBeaver are removed. The app uses `XMLParser` and `os.Logger`.
+- Dependencies come from Swift Package Manager.
+
+### Fixed
+- Crash for a game that has a compatibility patch but no pack
+- Force unwraps are removed from the whole app
+- The download buttons keep their place in every row
+
 ## v1.4.5
 ### Fixed
 - Merged an update to fix localization files (@L1cardo)
