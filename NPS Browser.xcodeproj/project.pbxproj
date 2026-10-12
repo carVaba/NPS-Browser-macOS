@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = AAB24A9706398593467C1B85 /* SwiftyBeaver */; };
+		0ED2F628FF680EC6264EAAA8 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03398F71359C9F6C2B9FCAFA /* Log.swift */; };
 		1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30DC810EDD6C8F880699F55 /* NSTableViewDiffableDataSource+Async.swift */; };
 		2D20AFE6A9ED9C94D28D6360 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD507C48DF2E0614C5DF5B78 /* Localizable.strings */; };
 		2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0099598B9832558EC7024AB4 /* AppKitExtensions.swift */; };
-		40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 8B47C8806E59F3B66C8CC4A0 /* Fuzi */; };
 		5108B79E211641190065BA71 /* TSVData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5108B79D211641190065BA71 /* TSVData.swift */; };
 		5139DF87209F6DE9004F65F9 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF86209F6DE9004F65F9 /* WindowController.swift */; };
 		5139DF89209FC6C6004F65F9 /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5139DF88209FC6C6004F65F9 /* DetailsViewController.swift */; };
@@ -68,6 +67,7 @@
 
 /* Begin PBXFileReference section */
 		0099598B9832558EC7024AB4 /* AppKitExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppKitExtensions.swift; sourceTree = "<group>"; };
+		03398F71359C9F6C2B9FCAFA /* Log.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		1BD933E6EDE6E234DD1B71BD /* ItemSelecting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ItemSelecting.swift; sourceTree = "<group>"; };
 		481F332F3D80331DA485DAAA /* MainMenu.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		5108B79D211641190065BA71 /* TSVData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSVData.swift; sourceTree = "<group>"; };
@@ -130,10 +130,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */,
 				7278423C289C32418CAD17D7 /* Zip in Frameworks */,
 				B09C0B18629C3ABAC9ADD143 /* RealmSwift in Frameworks */,
-				40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,6 +154,7 @@
 				FA8E809C334CBA9436788EE4 /* SourceURLProviding.swift */,
 				75D9BE96265F519535EA2137 /* DownloadQueuing.swift */,
 				55C366EE39477128270AA561 /* TransferRateEstimator.swift */,
+				03398F71359C9F6C2B9FCAFA /* Log.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -299,10 +298,8 @@
 			);
 			name = "NPS Browser";
 			packageProductDependencies = (
-				AAB24A9706398593467C1B85 /* SwiftyBeaver */,
 				FB15D42715B0D1EDD54B1288 /* Zip */,
 				307EFCE15643D2468550A11A /* RealmSwift */,
-				8B47C8806E59F3B66C8CC4A0 /* Fuzi */,
 			);
 			productName = "NPS Browser";
 			productReference = 51EBE81B2094E094005D44DC /* NPS Browser.app */;
@@ -342,10 +339,8 @@
 			);
 			mainGroup = 51EBE8122094E094005D44DC;
 			packageReferences = (
-				92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */,
 				0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */,
-				8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */,
 			);
 			productRefGroup = 51EBE81C2094E094005D44DC /* Products */;
 			projectDirPath = "";
@@ -424,6 +419,7 @@
 				7479B9A1F2CF70D619FE4F27 /* MainToolbar.swift in Sources */,
 				913D3D55F1DC89B25B8EFD62 /* TransferRateEstimator.swift in Sources */,
 				1ECCA86CC7BB1BB7C29B06A2 /* NSTableViewDiffableDataSource+Async.swift in Sources */,
+				0ED2F628FF680EC6264EAAA8 /* Log.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -655,22 +651,6 @@
 				minimumVersion = 20.0.0;
 			};
 		};
-		8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cezheng/Fuzi.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.1.3;
-			};
-		};
-		92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 		E8477C9645B774D7A1C89AE0 /* XCRemoteSwiftPackageReference "Zip" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/marmelroy/Zip.git";
@@ -686,16 +666,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0AB415A87600B949D94667ED /* XCRemoteSwiftPackageReference "realm-swift" */;
 			productName = RealmSwift;
-		};
-		8B47C8806E59F3B66C8CC4A0 /* Fuzi */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8B6E37D6669F50084439D539 /* XCRemoteSwiftPackageReference "Fuzi" */;
-			productName = Fuzi;
-		};
-		AAB24A9706398593467C1B85 /* SwiftyBeaver */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 92767C13717CD6E359C90780 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
-			productName = SwiftyBeaver;
 		};
 		FB15D42715B0D1EDD54B1288 /* Zip */ = {
 			isa = XCSwiftPackageProductDependency;

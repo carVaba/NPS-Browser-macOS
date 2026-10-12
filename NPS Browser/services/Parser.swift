@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Fuzi
 
 class Parser {
     func parseTSV(_ text: String, itemType: ItemType) -> [TSVData] {
@@ -67,27 +66,51 @@ class Parser {
     }
 
     func parseUpdateXML(_ xml: String) -> URL? {
-        var x: String = ""
-        
-        do {
-            let document = try XMLDocument(string: xml)
-            
-            if let root = document.root {
-                guard let lastpkg = root.firstChild(tag: "tag")?.children.last else {
-                    return nil
-                }
-                
-                let hp = lastpkg.firstChild(tag: "hybrid_package")
-                if hp == nil {
-                    x = lastpkg.attributes["url"]!
-                } else {
-                    x = (hp?.attributes["url"])!
-                }
-            }
-        } catch let error {
-            log.error(error)
+        guard let data = xml.data(using: .utf8) else {
+            return nil
         }
-        
-        return URL(string: x)
+
+        let reader = UpdateXMLReader()
+        let xmlParser = XMLParser(data: data)
+        xmlParser.delegate = reader
+        guard xmlParser.parse() else {
+            log.error(xmlParser.parserError ?? URLError(.cannotParseResponse))
+            return nil
+        }
+
+        return reader.packageURL.flatMap { URL(string: $0) }
+    }
+}
+
+// Reads the "url" of the last package in the first <tag> element. A hybrid package wins over the package itself.
+private final class UpdateXMLReader: NSObject, XMLParserDelegate {
+    private(set) var packageURL: String?
+    private var depth = 0
+    private var tagCount = 0
+    private var insideFirstTag = false
+
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?,
+                qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
+        depth += 1
+
+        switch depth {
+        case 2 where elementName == "tag":
+            tagCount += 1
+            insideFirstTag = tagCount == 1
+        case 3 where insideFirstTag:
+            packageURL = attributeDict["url"]
+        case 4 where insideFirstTag && elementName == "hybrid_package":
+            packageURL = attributeDict["url"] ?? packageURL
+        default:
+            break
+        }
+    }
+
+    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?,
+                qualifiedName qName: String?) {
+        if depth == 2 {
+            insideFirstTag = false
+        }
+        depth -= 1
     }
 }

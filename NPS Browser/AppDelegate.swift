@@ -8,10 +8,7 @@
 
 import Cocoa
 @preconcurrency import UserNotifications
-import SwiftyBeaver
 import RealmSwift
-
-let log = SwiftyBeaver.self
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NotificationSending {
@@ -23,7 +20,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     private(set) var windowController: WindowController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        setupSwiftyBeaverLogging()
         downloadsDirectory.prepare()
 
         windowController = WindowController(downloads: downloadManager, alerts: alerts, sources: sources)
@@ -51,14 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         return true
     }
 
-    func setupSwiftyBeaverLogging() {
-        let console = ConsoleDestination()
-        let file = FileDestination()
-
-        log.addDestination(console)
-        log.addDestination(file)
-    }
-    
     // MARK: - Notifications
 
     func showNotification(title: String, subtitle: String) {
