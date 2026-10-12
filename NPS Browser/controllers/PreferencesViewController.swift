@@ -231,7 +231,7 @@ class PreferencesViewController: NSViewController {
 
         chkHideInvalidURLItems.state            = Defaults[.hidesInvalidURLItems] ? .on : .off
         ccDLField.integerValue                  = Defaults[.concurrentDownloads]
-        dlPathField.stringValue                 = self.dlLocation!.path
+        dlPathField.stringValue                 = dlLocation?.path ?? ""
 
         chkExtractPKG.state                     = Defaults[.extractsAfterDownloading] ? .on : .off
         chkKeepPKG.state                        = Defaults[.keepsPackage] ? .on : .off
@@ -254,15 +254,17 @@ class PreferencesViewController: NSViewController {
         panel.allowsMultipleSelection = false
         
         panel.beginSheetModal(for: window) { (result) in
-            if result == NSApplication.ModalResponse.OK {
-                self.dlLocation = panel.urls[0]
-                self.dlPathField.stringValue = self.dlLocation!.path
+            if result == NSApplication.ModalResponse.OK, let url = panel.urls.first {
+                self.dlLocation = url
+                self.dlPathField.stringValue = url.path
             }
         }
     }
     
     @objc func chooseTSVFile(_ sender: NSButton) {
-        let id = sender.identifier!.rawValue
+        guard let id = sender.identifier?.rawValue else {
+            return
+        }
         
         func openDialog(txtField: NSTextField) {
             guard let window = view.window else { return }
@@ -271,8 +273,8 @@ class PreferencesViewController: NSViewController {
             panel.canChooseDirectories = false
             panel.allowsMultipleSelection = false
             panel.beginSheetModal(for: window) { (result) in
-                if result == NSApplication.ModalResponse.OK {
-                    txtField.stringValue = panel.url!.absoluteString
+                if result == NSApplication.ModalResponse.OK, let url = panel.url {
+                    txtField.stringValue = url.absoluteString
                 }
             }
         }
@@ -332,7 +334,9 @@ class PreferencesViewController: NSViewController {
             try validateAndStore(urlString: compatPackField.stringValue, endsWith: "txt", defaultsKey: .sourceCompatPacks)
             try validateAndStore(urlString: compatPatchField.stringValue, endsWith: "txt", defaultsKey: .sourceCompatPatch)
 
-            Defaults[.libraryLocation]      = self.dlLocation!.absoluteURL
+            if let location = dlLocation {
+                Defaults[.libraryLocation]  = location.absoluteURL
+            }
             Defaults[.concurrentDownloads]  = ccDLField.integerValue
             
             Defaults[.extractsAfterDownloading] = chkExtractPKG.state == .on

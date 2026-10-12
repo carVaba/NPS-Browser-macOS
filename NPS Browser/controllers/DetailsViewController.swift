@@ -22,11 +22,14 @@ class DetailsViewController: NSViewController {
     private let downloads: DownloadQueuing
     private let animationTarget: DownloadsButtonProviding
     private let updates: UpdateLinkFetching
+    private let artwork: GameArtworkViewController
 
-    init(downloads: DownloadQueuing, animationTarget: DownloadsButtonProviding, updates: UpdateLinkFetching) {
+    init(downloads: DownloadQueuing, animationTarget: DownloadsButtonProviding, updates: UpdateLinkFetching,
+         artwork: GameArtworkViewController) {
         self.downloads = downloads
         self.animationTarget = animationTarget
         self.updates = updates
+        self.artwork = artwork
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -152,14 +155,15 @@ class DetailsViewController: NSViewController {
             toggleBookmark()
             enableDownloadOptions()
 
-            boxartViewController.representedObject = representedObject
+            artwork.representedObject = representedObject
         }
     }
 
     @objc func btnDownloadClicked(_ sender: Any) {
-        let obj = selectedItem
+        guard let obj = selectedItem else {
+            return
+        }
 
-        let artwork = boxartViewController
         DownloadFlyAnimation.run(image: artwork.imgBoxart.image, from: artwork.imgBoxart, to: animationTarget)
 
         if (chkDLGame.state == .on) {
@@ -168,7 +172,7 @@ class DetailsViewController: NSViewController {
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
-            let url = updates.updateXMLURL(forTitleID: selectedItem.titleId ?? "")
+            let url = updates.updateXMLURL(forTitleID: obj.titleId ?? "")
             Task {
                 do {
                     let updateURL = try await self.updates.fetchUpdateXML(url: url)
@@ -224,18 +228,21 @@ class DetailsViewController: NSViewController {
     }
     
     @objc func btnBookmarkToggle(_ sender: NSButton) {
+        guard let item = selectedItem else {
+            return
+        }
         if (sender.state == .on) {
-            let bookmark = Bookmark(item: selectedItem)
-            DBManager().store(bookmark)
-        } else {
-            let bookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", selectedItem.pk)).first
-            DBManager().delete(bookmark!)
+            DBManager().store(Bookmark(item: item))
+        } else if let bookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", item.pk)).first {
+            DBManager().delete(bookmark)
         }
     }
 
     func enableBookmarkButton() {
-        let link = selectedItem.pkgDirectLink
-        if (link == "MISSING") {
+        guard let item = selectedItem else {
+            return
+        }
+        if (item.pkgDirectLink == "MISSING") {
             btnDownload.isEnabled = false
             chkBookmark.isEnabled = false
         } else {
@@ -245,8 +252,11 @@ class DetailsViewController: NSViewController {
     }
     
     func enableDownloadOptions() {
-        let ctype: ConsoleType = ConsoleType(rawValue: selectedItem.consoleType!)!
-        let ftype: FileType = FileType(rawValue: selectedItem.fileType!)!
+        guard let item = selectedItem,
+              let ctype = ConsoleType(rawValue: item.consoleType ?? ""),
+              let ftype = FileType(rawValue: item.fileType ?? "") else {
+            return
+        }
         
         chkDLGame.title = ftype.rawValue
         
@@ -254,14 +264,13 @@ class DetailsViewController: NSViewController {
         case .psv:
             switch(ftype) {
             case .game:
-                let titleId = selectedItem.titleId
                 chkDLCompatPack.title = "CPack"
                 chkDLGame.isEnabled = true
                 chkDLUpdate.isEnabled = true
                 chkDLUpdate.isHidden = false
                 chkDLCompatPack.isHidden = false
                 
-                let packs = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@", titleId!))
+                let packs = item.titleId.map { DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@", $0)) } ?? []
                 chkDLCompatPack.isEnabled = !packs.isEmpty
             default:
                 chkDLCompatPack.isHidden = true
@@ -270,7 +279,7 @@ class DetailsViewController: NSViewController {
                 chkDLUpdate.isEnabled = false
             }
         case .ps3:
-            let rap = selectedItem.rap!
+            let rap = item.rap ?? "MISSING"
             chkDLCompatPack.isHidden = false
             chkDLUpdate.isHidden = true
             if (rap == "NOT REQUIRED" || rap == "UNLOCK/LICENSE BY DLC" || rap == "MISSING") {
@@ -287,34 +296,29 @@ class DetailsViewController: NSViewController {
     }
     
     func toggleBookmark() {
-        let predicate = NSPredicate(format: "uuid == %@", selectedItem.pk)
+        guard let item = selectedItem else {
+            return
+        }
+        let predicate = NSPredicate(format: "uuid == %@", item.pk)
         let bookmark = DBManager().fetch(Bookmark.self, predicate: predicate)
 
-        if bookmark.isEmpty {
-            chkBookmark.state = .off
-        } else {
-            chkBookmark.state = .on
-        }
+        chkBookmark.state = bookmark.isEmpty ? .off : .on
     }
     
     func toggleBookmark(comparePK: String) {
-        if selectedItem.pk == comparePK {
+        if selectedItem?.pk == comparePK {
             chkBookmark.state = .off
         }
     }
 
     func sendDLData(url: URL, fileType: FileType) {
-        let obj = selectedItem
-        let downloadItem = DownloadItem(item: obj, downloadURL: url, fileType: fileType)
-        downloads.enqueue(downloadItem)
+        guard let obj = selectedItem else {
+            return
+        }
+        downloads.enqueue(DownloadItem(item: obj, downloadURL: url, fileType: fileType))
     }
     
-    var selectedItem: Item {
-        return representedObject as! Item
-    }
-    
-    var boxartViewController: GameArtworkViewController {
-        let vc: GameArtworkViewController = parent?.children[1] as! GameArtworkViewController
-        return vc
+    var selectedItem: Item? {
+        representedObject as? Item
     }
 }

@@ -14,6 +14,7 @@ class WindowController: NSWindowController {
     private let downloads: DownloadQueuing
     private let folders: DownloadFolderLocating
     private let dataViewController: DataViewController
+    private let detailsViewController: DetailsViewController
     private var popover: NSPopover?
 
     init(downloads: DownloadQueuing, folders: DownloadFolderLocating, alerts: AlertPresenting, sources: SourceURLProviding) {
@@ -27,7 +28,9 @@ class WindowController: NSWindowController {
         loading.host = data
         toolbar.delegate = data
 
-        let details = DetailsViewController(downloads: downloads, animationTarget: toolbar, updates: network)
+        let artwork = GameArtworkViewController()
+        let details = DetailsViewController(downloads: downloads, animationTarget: toolbar, updates: network, artwork: artwork)
+        data.detailsViewController = details
 
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 960, height: 520),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -37,7 +40,7 @@ class WindowController: NSWindowController {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isReleasedWhenClosed = false
-        window.contentViewController = Self.makeSplitViewController(data: data, details: details)
+        window.contentViewController = Self.makeSplitViewController(data: data, details: details, artwork: artwork)
         window.setContentSize(NSSize(width: 960, height: 520))
         window.center()
         window.setFrameAutosaveName("NPS Browser")
@@ -47,6 +50,7 @@ class WindowController: NSWindowController {
         self.downloads = downloads
         self.folders = folders
         self.dataViewController = data
+        self.detailsViewController = details
         super.init(window: window)
 
         toolbar.onShowDownloads = { [weak self] button in
@@ -56,7 +60,7 @@ class WindowController: NSWindowController {
         toolbar.onShowBookmarks = { [weak self] button in
             guard let self = self else { return }
             let bookmarks = BookmarksViewController(downloads: self.downloads, animationTarget: self.toolbar) { [weak self] uuid in
-                self?.dataViewController.detailsViewController.toggleBookmark(comparePK: uuid)
+                self?.detailsViewController.toggleBookmark(comparePK: uuid)
             }
             self.showPopover(bookmarks, from: button)
         }
@@ -68,12 +72,13 @@ class WindowController: NSWindowController {
 
     // MARK: - Layout
 
-    private static func makeSplitViewController(data: DataViewController, details detailsController: DetailsViewController) -> NSSplitViewController {
+    private static func makeSplitViewController(data: DataViewController, details detailsController: DetailsViewController,
+                                              artwork artworkController: GameArtworkViewController) -> NSSplitViewController {
         let details = NSSplitViewItem(viewController: detailsController)
         // The details have a fixed height, so the artwork pane takes the rest and does not depend on the image.
         details.minimumThickness = 270
         details.maximumThickness = 270
-        let artwork = NSSplitViewItem(viewController: GameArtworkViewController())
+        let artwork = NSSplitViewItem(viewController: artworkController)
         artwork.canCollapse = true
         artwork.minimumThickness = 90
         artwork.holdingPriority = NSLayoutConstraint.Priority(260)

@@ -72,13 +72,15 @@ class BookmarksViewController: NSViewController {
     }
 
     private func removeBookmark(_ bookmark: Bookmark) {
-        let uuid = bookmark.uuid
+        guard let uuid = bookmark.uuid else {
+            return
+        }
 
-        let storedBookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", uuid!)).first
+        if let storedBookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", uuid)).first {
+            DBManager().delete(storedBookmark)
+        }
 
-        DBManager().delete(storedBookmark!)
-
-        onBookmarkRemoved(uuid!)
+        onBookmarkRemoved(uuid)
 
         updateView()
     }

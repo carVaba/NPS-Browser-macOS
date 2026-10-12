@@ -107,7 +107,7 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
 
     override var representedObject: Any? {
         didSet {
-            self.detailsViewController.representedObject = representedObject
+            detailsViewController?.representedObject = representedObject
         }
     }
 
@@ -166,11 +166,8 @@ class DataViewController: NSViewController, ToolbarDelegate, NSTableViewDelegate
         representedObject = item
     }
 
-    var detailsViewController: DetailsViewController {
-        let sc: NSSplitViewController = parent?.children[1] as! NSSplitViewController
-        let vc: DetailsViewController = sc.children[0] as! DetailsViewController
-        return vc
-    }
+    // Set by the window controller. The details show the selected row.
+    weak var detailsViewController: DetailsViewController?
 
     // MARK: - NSTableViewDelegate
 

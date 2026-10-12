@@ -163,21 +163,27 @@ class DownloadListItemCellView: NSTableCellView {
     }
 
     @objc func doAction(_ sender: Any) {
-        if (item?.isResumable)! {
+        guard let item = item else {
+            return
+        }
+        if item.isResumable {
             resumeRequest()
-        } else if (item?.isStoppable)! {
+        } else if item.isStoppable {
             stopRequest()
-        } else if (item?.isViewable)! {
+        } else if item.isViewable {
             viewFile()
         }
     }
 
     func changeImage() {
-        if (item?.isResumable)! {
+        guard let item = item else {
+            return
+        }
+        if item.isResumable {
             btnAction.image = NSImage.symbol("play.circle")
-        } else if (item?.isStoppable)! {
+        } else if item.isStoppable {
             btnAction.image = NSImage.symbol("pause.circle")
-        } else if (item?.isViewable)! {
+        } else if item.isViewable {
             btnAction.image = NSImage.symbol("magnifyingglass.circle")
         }
     }
@@ -190,7 +196,9 @@ class DownloadListItemCellView: NSTableCellView {
     }
 
     func stopRequest() {
-        downloads.stop(item!)
+        if let item = item {
+            downloads.stop(item)
+        }
     }
     
     // A click on a finished download opens its folder.
@@ -208,9 +216,11 @@ class DownloadListItemCellView: NSTableCellView {
     }
 
     func resumeRequest() {
-        item!.status = "Resuming..."
-        downloads.resume(item!)
-        
-        item?.makeStoppable()
+        guard let item = item else {
+            return
+        }
+        item.status = "Resuming..."
+        downloads.resume(item)
+        item.makeStoppable()
     }
 }
