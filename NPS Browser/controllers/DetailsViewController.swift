@@ -181,12 +181,12 @@ class DetailsViewController: NSViewController {
                     
                     if let cpacko: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPack'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpacko.downloadUrl)!)
-                        baseDownloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .compatPack)
+                        baseDownloadItem = DownloadItem(item: obj, downloadURL: url!, fileType: .compatPack)
                     }
                     
                     if let cpatcho: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPatch'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpatcho.downloadUrl)!)
-                        let item = Helpers().makeDownloadItem(from: obj, downloadURL: url!, fileType: .compatPatch)
+                        let item = DownloadItem(item: obj, downloadURL: url!, fileType: .compatPatch)
                         baseDownloadItem?.doNext = item
                         item.parentItem = baseDownloadItem
                     }
@@ -286,7 +286,7 @@ class DetailsViewController: NSViewController {
 
     func sendDLData(url: URL, fileType: FileType) {
         let obj = selectedItem
-        let downloadItem = Helpers().makeDownloadItem(from: obj, downloadURL: url, fileType: fileType)
+        let downloadItem = DownloadItem(item: obj, downloadURL: url, fileType: fileType)
         Helpers().sharedAppDelegate.downloadManager.enqueue(downloadItem)
     }
     

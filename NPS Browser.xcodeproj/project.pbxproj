@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		00F046A96F88FED71638FD1C /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = AAB24A9706398593467C1B85 /* SwiftyBeaver */; };
 		2D20AFE6A9ED9C94D28D6360 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD507C48DF2E0614C5DF5B78 /* Localizable.strings */; };
+		2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0099598B9832558EC7024AB4 /* AppKitExtensions.swift */; };
 		40C1C313B9DF6BA4AAAA1A14 /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 8B47C8806E59F3B66C8CC4A0 /* Fuzi */; };
 		5108B79E211641190065BA71 /* TSVData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5108B79D211641190065BA71 /* TSVData.swift */; };
 		512175A820A7D28B00772C86 /* WindowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512175A720A7D28B00772C86 /* WindowDelegate.swift */; };
@@ -61,6 +62,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0099598B9832558EC7024AB4 /* AppKitExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppKitExtensions.swift; sourceTree = "<group>"; };
 		481F332F3D80331DA485DAAA /* MainMenu.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		5108B79D211641190065BA71 /* TSVData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSVData.swift; sourceTree = "<group>"; };
 		5121752E20A73EBC00772C86 /* NPS Browser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "NPS Browser.entitlements"; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 		5181948C20DDB4C9009282AB /* extensions */ = {
 			isa = PBXGroup;
 			children = (
+				0099598B9832558EC7024AB4 /* AppKitExtensions.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -400,6 +403,7 @@
 				AE7B484997D8E19F30CEADF1 /* DownloadFlyAnimation.swift in Sources */,
 				B991C52FD4DDE1B0B7CD029B /* main.swift in Sources */,
 				E6393DA65B0885DA39E311C8 /* MainMenu.swift in Sources */,
+				2D5BD0EBAA8A3B7F62FEED2D /* AppKitExtensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

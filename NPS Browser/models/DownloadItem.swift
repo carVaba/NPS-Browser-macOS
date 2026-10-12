@@ -69,6 +69,19 @@ class DownloadItem: NSObject, Codable {
     override init() {
         super.init()
     }
+
+    convenience init(item: Item, downloadURL: URL, fileType: FileType) {
+        self.init()
+        titleId = item.titleId
+        name = "\(fileType.rawValue) - \(item.name ?? "")"
+        self.downloadURL = downloadURL
+        zrif = item.zrif
+        if fileType == .game {
+            sha256 = item.sha256
+        }
+        consoleType = item.consoleType
+        self.fileType = fileType.rawValue
+    }
     
     var hasFollowUp: Bool {
         return doNext != nil
