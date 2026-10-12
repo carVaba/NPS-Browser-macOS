@@ -10,8 +10,8 @@ import Foundation
 import Fuzi
 
 class Parser {
-    func parseTSV(data: String, itemType: ItemType) -> [TSVData] {
-        var lines = data.split(whereSeparator: { $0.isNewline }).makeIterator()
+    func parseTSV(_ text: String, itemType: ItemType) -> [TSVData] {
+        var lines = text.split(whereSeparator: { $0.isNewline }).makeIterator()
 
         guard let headerLine = lines.next() else {
             return []
@@ -41,23 +41,23 @@ class Parser {
         return parsedData
     }
     
-    func parseCompatPackEntries(data: String, isPatch: Bool = false, typeName: String) -> [CompatPack] {
+    func parseCompatPackEntries(_ text: String, isPatch: Bool = false, typeName: String) -> [CompatPack] {
         var parsedData: [CompatPack] = []
-        let rows = data.split(separator: "\n")
+        let rows = text.split(separator: "\n")
 
         for row in rows {
             let baseURL = "https://gitlab.com/nopaystation_repos/nps_compati_packs/raw/master/"
             let components = row.components(separatedBy: "=")
             let path = components.first ?? ""
-            var title_id: String
+            var titleID: String
             if (isPatch) {
-                title_id = path.components(separatedBy: "/")[1]
+                titleID = path.components(separatedBy: "/")[1]
             } else {
-                title_id = path.components(separatedBy: "/")[0]
+                titleID = path.components(separatedBy: "/")[0]
             }
             
             let pack = CompatPack()
-            pack.titleId = title_id
+            pack.titleId = titleID
             pack.downloadUrl = "\(baseURL)\(path)"
             pack.type = typeName
 
@@ -66,8 +66,7 @@ class Parser {
         return parsedData
     }
 
-    func parseUpdateXML(data: String) -> URL? {
-        let xml = data
+    func parseUpdateXML(_ xml: String) -> URL? {
         var x: String = ""
         
         do {

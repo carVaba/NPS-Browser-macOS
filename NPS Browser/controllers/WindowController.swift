@@ -134,7 +134,7 @@ class WindowController: NSWindowController, NSToolbarDelegate, WindowDelegate {
 
     var itemType: ItemType {
 //        return
-        return ItemType.parseString((tbType.selectedItem?.title)!, ItemType.getTypeFromTag(tbType.selectedItem?.tag ?? 0))
+        return ItemType(menuTitle: (tbType.selectedItem?.title)!, fileType: FileType(tag: tbType.selectedItem?.tag ?? 0))
     }
     
     var searchString: String {

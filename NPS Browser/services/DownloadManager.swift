@@ -200,7 +200,7 @@ class DownloadManager {
                 return
             }
 
-            if (item.isMore) {
+            if (item.hasFollowUp) {
                 item.doNext?.cpackPath = item.destinationURL
                 item.status = "Waiting..."
 

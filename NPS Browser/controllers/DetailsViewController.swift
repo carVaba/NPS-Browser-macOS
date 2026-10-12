@@ -49,7 +49,7 @@ class DetailsViewController: NSViewController {
             }
         }
         if (chkDLUpdate.state == .on && chkDLUpdate.isEnabled && chkDLUpdate.isHidden == false) {
-            let url = NetworkManager().getUpdateXMLURLFromHMAC(titleId: selectedItem.titleId!)
+            let url = NetworkManager().updateXMLURL(forTitleID: selectedItem.titleId!)
             Task {
                 do {
                     let updateURL = try await NetworkManager().fetchUpdateXML(url: url)
@@ -73,12 +73,12 @@ class DetailsViewController: NSViewController {
                     
                     if let cpacko: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPack'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpacko.downloadUrl)!)
-                        baseDLItem = Helpers().makeDLItem(data: obj, downloadUrl: url!, fileType: .CPack)
+                        baseDLItem = Helpers().makeDLItem(from: obj, downloadUrl: url!, fileType: .CPack)
                     }
                     
                     if let cpatcho: CompatPack = DBManager().fetch(CompatPack.self, predicate: NSPredicate(format: "titleId == %@ AND type == 'CompatPatch'", titleId!), sorted: nil).first {
                         let url = URL(string: (cpatcho.downloadUrl)!)
-                        let item = Helpers().makeDLItem(data: obj, downloadUrl: url!, fileType: .CPatch)
+                        let item = Helpers().makeDLItem(from: obj, downloadUrl: url!, fileType: .CPatch)
                         baseDLItem?.doNext = item
                         item.parentItem = baseDLItem
                     }
@@ -94,10 +94,10 @@ class DetailsViewController: NSViewController {
     @IBAction func btnBookmarkToggle(_ sender: NSButton) {
         if (sender.state == .on) {
             let bookmark = Bookmark(item: selectedItem)
-            DBManager().store(object: bookmark)
+            DBManager().store(bookmark)
         } else {
             let bookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", selectedItem.pk)).first
-            DBManager().delete(object: bookmark!)
+            DBManager().delete(bookmark!)
         }
     }
 
@@ -178,7 +178,7 @@ class DetailsViewController: NSViewController {
 
     func sendDLData(url: URL, fileType: FileType) {
         let obj = selectedItem
-        let dlItem = Helpers().makeDLItem(data: obj, downloadUrl: url, fileType: fileType)
+        let dlItem = Helpers().makeDLItem(from: obj, downloadUrl: url, fileType: fileType)
         Helpers().sharedAppDelegate.downloadManager.enqueue(dlItem)
     }
     

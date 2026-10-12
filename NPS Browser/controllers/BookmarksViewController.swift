@@ -21,12 +21,12 @@ class BookmarksViewController: NSViewController {
     }
     
     @IBAction func doRemoveBookmark(_ sender: NSButton) {
-        let bookmark = Helpers().getRowObjectFromTableRowButton(sender) as! Bookmark
+        let bookmark = Helpers().rowObject(for: sender) as! Bookmark
         let uuid = bookmark.uuid
 
         let storedBookmark = DBManager().fetch(Bookmark.self, predicate: NSPredicate(format: "uuid == %@", uuid!)).first
         
-        DBManager().delete(object: storedBookmark!)
+        DBManager().delete(storedBookmark!)
 
         Helpers().dataController.detailsViewController.toggleBookmark(comparePK: uuid!)
 

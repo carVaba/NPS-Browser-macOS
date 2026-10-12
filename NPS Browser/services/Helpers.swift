@@ -45,7 +45,7 @@ class Helpers {
         dataController.presentAsSheet(windowDelegate.loadingViewController)
     }
     
-    func getRowObjectFromTableRowButton(_ sender: NSButton) -> Any? {
+    func rowObject(for sender: NSButton) -> Any? {
         var superView = sender.superview
         while let view = superView, !(view is NSTableCellView) {
             superView = view.superview
@@ -58,24 +58,24 @@ class Helpers {
         return cell.objectValue
     }
     
-    func makeDLItem(data: Item, downloadUrl: URL, fileType: FileType) -> DLItem {
+    func makeDLItem(from item: Item, downloadUrl: URL, fileType: FileType) -> DLItem {
         let obj = DLItem()
-        let _: ConsoleType = ConsoleType.init(rawValue: data.consoleType!)!
+        let _: ConsoleType = ConsoleType.init(rawValue: item.consoleType!)!
 
-        obj.titleId        = data.titleId
-        obj.name            = "\(fileType.rawValue) - \(data.name!)"
+        obj.titleId        = item.titleId
+        obj.name            = "\(fileType.rawValue) - \(item.name!)"
         obj.downloadUrl   = downloadUrl
-        obj.zrif = data.zrif
+        obj.zrif = item.zrif
         if fileType == .Game {
-            obj.sha256 = data.sha256
+            obj.sha256 = item.sha256
         }
-        obj.consoleType = data.consoleType
+        obj.consoleType = item.consoleType
         obj.fileType = fileType.rawValue
 
         return obj
     }
     
-    func relativePast(for date : Date?) -> String {
+    func relativeDescription(of date: Date?) -> String {
         if (date == nil) {
             return "Never"
         }
@@ -105,7 +105,7 @@ class Helpers {
         }
     }
     
-    func getUrlSettingsByType(itemType: ItemType) -> URL? {
+    func sourceURL(for itemType: ItemType) -> URL? {
         switch (itemType.console) {
         case .PSV:
             switch (itemType.fileType) {

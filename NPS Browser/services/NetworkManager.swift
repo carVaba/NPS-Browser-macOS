@@ -16,7 +16,7 @@ class NetworkManager {
     let itemType = Helpers().windowDelegate.itemType
 
     func makeRequest() async {
-        guard let url = Helpers().getUrlSettingsByType(itemType: itemType) else {
+        guard let url = Helpers().sourceURL(for: itemType) else {
             Helpers().showAlert(messageText: "No URL set for \(self.itemType.console.rawValue) \(self.itemType.fileType.rawValue)s.", informativeText: "Set source paths in the preferences window.", alertStyle: .warning)
 
             log.error("Invalid URL given for item type: \(itemType.description)")
@@ -46,7 +46,7 @@ class NetworkManager {
 
             self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
             self.windowDelegate.loadingViewController.setProgress(amount: 20)
-            let parsedTSV = Parser().parseTSV(data: text, itemType: self.itemType)
+            let parsedTSV = Parser().parseTSV(text, itemType: self.itemType)
 
             self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
             self.windowDelegate.loadingViewController.setProgress(amount: 50)
@@ -54,7 +54,7 @@ class NetworkManager {
 
             self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
             self.windowDelegate.loadingViewController.setProgress(amount: 20)
-            DBManager().storeBulk(objArray: parsedTSV.map { Item(tsvData: $0) })
+            DBManager().store(contentsOf: parsedTSV.map { Item(tsvData: $0) })
         } catch {
             log.error(error)
             Helpers().loadingViewController.closeWindow()
@@ -125,7 +125,7 @@ class NetworkManager {
 
         self.windowDelegate.loadingViewController.setLabel(text: "Preparing... (step 3/5)")
         self.windowDelegate.loadingViewController.setProgress(amount: 20)
-        let parsed = Parser().parseCompatPackEntries(data: text, isPatch: isPatch, typeName: typeName)
+        let parsed = Parser().parseCompatPackEntries(text, isPatch: isPatch, typeName: typeName)
 
         self.windowDelegate.loadingViewController.setLabel(text: "Removing old values... (step 4/5)")
         self.windowDelegate.loadingViewController.setProgress(amount: 50)
@@ -133,12 +133,12 @@ class NetworkManager {
 
         self.windowDelegate.loadingViewController.setLabel(text: "Storing new values... (step 5/5)")
         self.windowDelegate.loadingViewController.setProgress(amount: 20)
-        DBManager().storeBulk(objArray: parsed)
+        DBManager().store(contentsOf: parsed)
 
         Helpers().loadingViewController.closeWindow()
     }
 
-    func getUpdateXMLURLFromHMAC(titleId: String) -> String {
+    func updateXMLURL(forTitleID titleID: String) -> String {
         var output: [String] = []
         var error: [String] = []
 
@@ -150,7 +150,7 @@ class NetworkManager {
         task.standardError = errpipe
 
         task.launchPath = vitaupdatelinksPath
-        task.arguments = ["-t", titleId]
+        task.arguments = ["-t", titleID]
 
         task.launch()
 
@@ -185,7 +185,7 @@ class NetworkManager {
         }
 
         let xml = try await HTTPClient.string(from: requestURL)
-        guard let updateURL = Parser().parseUpdateXML(data: xml) else {
+        guard let updateURL = Parser().parseUpdateXML(xml) else {
             throw URLError(.cannotParseResponse)
         }
         return updateURL

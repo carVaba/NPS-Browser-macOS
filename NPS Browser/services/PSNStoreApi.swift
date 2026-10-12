@@ -24,18 +24,18 @@ class PSNStoreApi {
         let contentId = item.contentId!
         var language = "en"
         
-        var countryAbbv: String = region
+        var countryCode: String = region
         
         switch(region) {
-        case "EU": countryAbbv = "GB"
+        case "EU": countryCode = "GB"
         case "JP":
             language = "ja"
-            countryAbbv = "JP"
-        case "ASIA": countryAbbv = "SG"
-        default: countryAbbv = region
+            countryCode = "JP"
+        case "ASIA": countryCode = "SG"
+        default: countryCode = region
         }
         
-        let psnUrl = "https://store.playstation.com/store/api/chihiro/00_09_000/container/\(countryAbbv)/\(language)/19/\(contentId)/1534563384000/image?w=248&h=248"
+        let psnUrl = "https://store.playstation.com/store/api/chihiro/00_09_000/container/\(countryCode)/\(language)/19/\(contentId)/1534563384000/image?w=248&h=248"
         return URL(string: psnUrl)!
     }
     

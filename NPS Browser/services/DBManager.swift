@@ -14,7 +14,7 @@ class DBManager {
     let storage = try! RealmStorageContext()
     
     // MARK: Create
-    func store(object: Storable) {
+    func store(_ object: Storable) {
         do {
             try storage.safeWrite {
                 storage.realm?.add(object as! Object)
@@ -24,10 +24,10 @@ class DBManager {
         }
     }
     
-    func storeBulk(objArray: [Object]) {
+    func store(contentsOf objects: [Object]) {
         do {
             try storage.safeWrite {
-                storage.realm?.add(objArray)
+                storage.realm?.add(objects)
             }
         } catch let error as NSError {
             log.error(error)
@@ -55,7 +55,7 @@ class DBManager {
     }
     
     // MARK: Delete
-    func delete(object: Storable) {
+    func delete(_ object: Storable) {
         do {
             try storage.delete(object: object)
         } catch let error as NSError {

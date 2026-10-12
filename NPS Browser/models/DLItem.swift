@@ -70,7 +70,7 @@ class DLItem: NSObject, Codable {
         super.init()
     }
     
-    var isMore: Bool {
+    var hasFollowUp: Bool {
         return doNext != nil
     }
     
